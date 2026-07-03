@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sesiones de Mercado — Traders House</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b0d10">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --bg:#0b0d10;
+    --panel:#14171b;
+    --panel2:#1b1f24;
+    --line:#2a2f36;
+    --text:#e8eaed;
+    --muted:#8b929c;
+    --amber:#e0a72e;
+    --green:#2fae5e;
+    --green-dim:#1d3a2a;
+    --red:#d94f4f;
+    --red-dim:#3a2222;
+    --yellow:#d9c24f;
+    --yellow-dim:#3a3722;
+    --empty:#20242a;
+    --mono: 'JetBrains Mono','SF Mono',Consolas,monospace;
+    --sans: -apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:var(--bg);
+    color:var(--text);
+    font-family:var(--sans);
+    -webkit-font-smoothing:antialiased;
+  }
+  header{
+    padding:18px 20px 14px;
+    border-bottom:1px solid var(--line);
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    flex-wrap:wrap;
+    gap:12px;
+    background:linear-gradient(180deg,#0f1216,#0b0d10);
+  }
+  .brand{
+    display:flex;
+    align-items:baseline;
+    gap:10px;
+  }
+  .brand .tick{
+    font-family:var(--mono);
+    color:var(--amber);
+    font-size:13px;
+    letter-spacing:2px;
+    border:1px solid var(--amber);
+    padding:2px 6px;
+    border-radius:3px;
+  }
+  h1{
+    font-size:18px;
+    font-weight:600;
+    margin:0;
+    letter-spacing:0.2px;
+  }
+  .sub{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    margin-top:2px;
+  }
+  nav{
+    display:flex;
+    gap:6px;
+    background:var(--panel);
+    padding:4px;
+    border-radius:8px;
+    border:1px solid var(--line);
+  }
+  nav button{
+    background:transparent;
+    border:none;
+    color:var(--muted);
+    padding:8px 14px;
+    border-radius:6px;
+    font-size:13px;
+    font-weight:600;
+    cursor:pointer;
+    font-family:var(--sans);
+  }
+  nav button.active{
+    background:var(--panel2);
+    color:var(--text);
+    box-shadow:inset 0 0 0 1px var(--line);
+  }
+  main{
+    padding:20px;
+    max-width:1200px;
+    margin:0 auto;
+  }
+  .toolbar{
+    display:flex;
+    align-items:center;
+    gap:10px;
+    margin-bottom:16px;
+    flex-wrap:wrap;
+  }
+  .toolbar input[type=date]{
+    background:var(--panel);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:8px 10px;
+    border-radius:6px;
+    font-family:var(--mono);
+    font-size:13px;
+  }
+  .btn{
+    background:var(--panel);
+    border:1px solid var(--line);
+    color:var(--text);
+    padding:8px 12px;
+    border-radius:6px;
+    font-size:13px;
+    cursor:pointer;
+    font-family:var(--sans);
+    font-weight:500;
+  }
+  .btn:hover{border-color:var(--amber);}
+  .btn.ghost{color:var(--muted);}
+  .spacer{flex:1;}
+  .legend{
+    display:flex;
+    gap:14px;
+    font-size:12px;
+    color:var(--muted);
+    align-items:center;
+  }
+  .legend span{display:flex;align-items:center;gap:5px;}
+  .dot{width:10px;height:10px;border-radius:2px;display:inline-block;}
+  .dot.g{background:var(--green);}
+  .dot.r{background:var(--red);}
+  .dot.y{background:var(--yellow);}
+  .dot.e{background:var(--empty);border:1px solid var(--line);}
+
+  /* DAY VIEW */
+  .day-title{
+    font-family:var(--mono);
+    font-size:14px;
+    color:var(--amber);
+    margin-bottom:12px;
+    text-transform:capitalize;
+  }
+  .hour-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fill,minmax(150px,1fr));
+    gap:10px;
+  }
+  .hour-cell{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:14px;
+    cursor:pointer;
+    transition:transform .08s ease, border-color .12s ease;
+    user-select:none;
+  }
+  .hour-cell:hover{border-color:var(--amber);}
+  .hour-cell:active{transform:scale(0.97);}
+  .hour-cell .h{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:8px;
+  }
+  .hour-cell .state{
+    font-size:13px;
+    font-weight:600;
+    display:flex;
+    align-items:center;
+    gap:6px;
+  }
+  .hour-cell.green{background:var(--green-dim);border-color:var(--green);}
+  .hour-cell.red{background:var(--red-dim);border-color:var(--red);}
+  .hour-cell.yellow{background:var(--yellow-dim);border-color:var(--yellow);}
+
+  /* WEEK VIEW */
+  .week-table{
+    width:100%;
+    border-collapse:collapse;
+    font-family:var(--mono);
+    font-size:12px;
+  }
+  .week-table th{
+    padding:8px 4px;
+    color:var(--muted);
+    font-weight:600;
+    text-align:center;
+    border-bottom:1px solid var(--line);
+    text-transform:capitalize;
+  }
+  .week-table td{
+    padding:0;
+    text-align:center;
+    border:1px solid var(--line);
+  }
+  .week-table .hourlabel{
+    color:var(--muted);
+    padding:0 8px;
+    white-space:nowrap;
+  }
+  .wcell{
+    width:100%;
+    height:34px;
+    cursor:pointer;
+    display:block;
+  }
+  .wcell.green{background:var(--green);}
+  .wcell.red{background:var(--red);}
+  .wcell.yellow{background:var(--yellow);}
+  .wcell.empty{background:var(--empty);}
+  .wcell:hover{outline:1px solid var(--amber);outline-offset:-1px;}
+
+  /* MONTH VIEW */
+  .month-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:8px;
+  }
+  .month-day{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:8px;
+    min-height:70px;
+    cursor:pointer;
+  }
+  .month-day:hover{border-color:var(--amber);}
+  .month-day .num{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    margin-bottom:6px;
+  }
+  .month-day .bars{
+    display:flex;
+    flex-wrap:wrap;
+    gap:2px;
+  }
+  .month-day .bars i{
+    width:8px;height:8px;border-radius:1px;display:block;
+  }
+  .month-day .bars i.green{background:var(--green);}
+  .month-day .bars i.red{background:var(--red);}
+  .month-day .bars i.yellow{background:var(--yellow);}
+  .weekday-hdr{
+    font-family:var(--mono);
+    font-size:11px;
+    color:var(--muted);
+    text-transform:uppercase;
+    text-align:center;
+    padding-bottom:4px;
+  }
+
+  /* HEATMAP */
+  section.panel{
+    background:var(--panel);
+    border:1px solid var(--line);
+    border-radius:10px;
+    padding:18px;
+    margin-top:24px;
+  }
+  section.panel h2{
+    font-size:14px;
+    margin:0 0 4px;
+    color:var(--text);
+  }
+  section.panel .desc{
+    font-size:12px;
+    color:var(--muted);
+    margin-bottom:14px;
+  }
+  .heatmap-table{
+    border-collapse:collapse;
+    font-family:var(--mono);
+    font-size:11px;
+    width:100%;
+  }
+  .heatmap-table th{
+    color:var(--muted);
+    padding:4px 6px;
+    text-transform:capitalize;
+    font-weight:600;
+  }
+  .heatmap-table td{
+    text-align:center;
+    padding:0;
+  }
+  .heat-cell{
+    width:100%;
+    height:30px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:#0b0d10;
+    font-weight:700;
+    border-radius:2px;
+  }
+  .heat-cell.empty{color:var(--muted);background:var(--empty);font-weight:400;}
+  .hm-hourlabel{color:var(--muted);padding-right:8px;text-align:right;}
+
+  .stats-row{
+    display:flex;
+    gap:24px;
+    margin-top:16px;
+    flex-wrap:wrap;
+  }
+  .stat{
+    font-family:var(--mono);
+  }
+  .stat .val{font-size:20px;font-weight:700;}
+  .stat .lbl{font-size:11px;color:var(--muted);margin-top:2px;}
+  .stat.g .val{color:var(--green);}
+  .stat.r .val{color:var(--red);}
+  .stat.y .val{color:var(--yellow);}
+
+  footer{
+    text-align:center;
+    padding:24px;
+    color:var(--muted);
+    font-size:11px;
+    font-family:var(--mono);
+  }
+
+  .hidden{display:none !important;}
+
+  input[type=file]{display:none;}
+
+  @media (max-width:640px){
+    .hour-grid{grid-template-columns:repeat(2,1fr);}
+    .month-grid{grid-template-columns:repeat(5,1fr);gap:4px;}
+    .month-day{padding:5px;min-height:50px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <div>
+      <h1>Sesiones de Mercado</h1>
+      <div class="sub">TRADERS HOUSE · registro horario 09:00–22:00 · L–V</div>
+    </div>
+  </div>
+  <nav>
+    <button class="active" data-view="dia">Día</button>
+    <button data-view="semana">Semana</button>
+    <button data-view="mes">Mes</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- DAY VIEW -->
+  <div id="view-dia">
+    <div class="toolbar">
+      <button class="btn" id="dia-prev">← Día</button>
+      <input type="date" id="dia-picker">
+      <button class="btn" id="dia-next">Día →</button>
+      <button class="btn ghost" id="dia-today">Hoy</button>
+      <div class="spacer"></div>
+      <div class="legend">
+        <span><i class="dot g"></i>Alcista</span>
+        <span><i class="dot r"></i>Bajista</span>
+        <span><i class="dot y"></i>Lateral</span>
+        <span><i class="dot e"></i>Sin registrar</span>
+      </div>
+    </div>
+    <div class="day-title" id="dia-title"></div>
+    <div class="hour-grid" id="dia-grid"></div>
+  </div>
+
+  <!-- WEEK VIEW -->
+  <div id="view-semana" class="hidden">
+    <div class="toolbar">
+      <button class="btn" id="sem-prev">← Semana</button>
+      <span class="sub" id="sem-range" style="font-family:var(--mono);font-size:13px;color:var(--text);"></span>
+      <button class="btn" id="sem-next">Semana →</button>
+      <button class="btn ghost" id="sem-today">Esta semana</button>
+    </div>
+    <table class="week-table" id="sem-table"></table>
+  </div>
+
+  <!-- MONTH VIEW -->
+  <div id="view-mes" class="hidden">
+    <div class="toolbar">
+      <button class="btn" id="mes-prev">← Mes</button>
+      <span class="sub" id="mes-label" style="font-family:var(--mono);font-size:13px;color:var(--text);text-transform:capitalize;"></span>
+      <button class="btn" id="mes-next">Mes →</button>
+      <button class="btn ghost" id="mes-today">Este mes</button>
+    </div>
+    <div class="month-grid" id="mes-hdr"></div>
+    <div class="month-grid" id="mes-grid" style="margin-top:6px;"></div>
+  </div>
+
+  <!-- HEATMAP + STATS (always visible below) -->
+  <section class="panel">
+    <h2>Mapa de calor histórico</h2>
+    <div class="desc">Color dominante por hora y día de la semana, calculado sobre todo el histórico guardado.</div>
+    <div style="overflow-x:auto;">
+      <table class="heatmap-table" id="heatmap"></table>
+    </div>
+    <div class="stats-row" id="stats"></div>
+  </section>
+
+  <section class="panel">
+    <h2>Copia de seguridad</h2>
+    <div class="desc">Los datos se guardan automáticamente en este navegador. Exporta de vez en cuando para no perder el histórico si cambias de equipo o borras datos del navegador.</div>
+    <div class="toolbar" style="margin-bottom:0;">
+      <button class="btn" id="btn-export">Exportar JSON</button>
+      <button class="btn" id="btn-import">Importar JSON</button>
+      <input type="file" id="file-import" accept="application/json">
+      <div class="spacer"></div>
+      <button class="btn ghost" id="btn-weekend">Activar sáb/dom (cripto)</button>
+    </div>
+  </section>
+
+</main>
+
+<footer>Sesiones de Mercado v1.0 — Traders House — datos almacenados localmente en este navegador</footer>
+
+<script>
+(function(){
+  "use strict";
+
+  const STORAGE_KEY = "th_sesiones_mercado_v1";
+  const SETTINGS_KEY = "th_sesiones_mercado_settings_v1";
+  const HOURS = Array.from({length:14}, (_,i)=>9+i); // 9..22
+  const STATES = ["green","red","yellow"]; // cycle order; null = empty is 4th state
+  const DOW_NAMES = ["Domingo","Lunes","Martes","Miércoles","Jueves","Viernes","Sábado"];
+  const DOW_SHORT = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+  const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+  let data = loadData();
+  let settings = loadSettings();
+
+  function loadData(){
+    try{
+      const raw = localStorage.getItem(STORAGE_KEY);
+      return raw ? JSON.parse(raw) : {};
+    }catch(e){ return {}; }
+  }
+  function saveData(){
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+  function loadSettings(){
+    try{
+      const raw = localStorage.getItem(SETTINGS_KEY);
+      return raw ? JSON.parse(raw) : { weekendEnabled:false };
+    }catch(e){ return { weekendEnabled:false }; }
+  }
+  function saveSettings(){
+    localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings));
+  }
+
+  function fmtDate(d){
+    const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), day=String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${day}`;
+  }
+  function parseDate(s){
+    const [y,m,d] = s.split('-').map(Number);
+    return new Date(y, m-1, d);
+  }
+  function isWeekend(d){
+    const dow = d.getDay();
+    return dow===0 || dow===6;
+  }
+  function getCellState(dateStr, hour){
+    return (data[dateStr] && data[dateStr][hour]) || null;
+  }
+  function setCellState(dateStr, hour, state){
+    if(!data[dateStr]) data[dateStr] = {};
+    if(state===null){ delete data[dateStr][hour]; if(Object.keys(data[dateStr]).length===0) delete data[dateStr]; }
+    else data[dateStr][hour] = state;
+    saveData();
+  }
+  function nextState(cur){
+    if(cur===null) return "green";
+    if(cur==="green") return "red";
+    if(cur==="red") return "yellow";
+    return null;
+  }
+  function stateLabel(s){
+    if(s==="green") return "🟩 Alcista";
+    if(s==="red") return "🟥 Bajista";
+    if(s==="yellow") return "🟨 Lateral";
+    return "⬜ Sin registrar";
+  }
+
+  // ---------- VIEW SWITCHING ----------
+  const views = { dia: document.getElementById('view-dia'), semana: document.getElementById('view-semana'), mes: document.getElementById('view-mes') };
+  document.querySelectorAll('nav button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      Object.values(views).forEach(v=>v.classList.add('hidden'));
+      views[btn.dataset.view].classList.remove('hidden');
+      if(btn.dataset.view==='dia') renderDay();
+      if(btn.dataset.view==='semana') renderWeek();
+      if(btn.dataset.view==='mes') renderMonth();
+    });
+  });
+
+  // ---------- DAY VIEW ----------
+  let currentDay = new Date();
+  const diaPicker = document.getElementById('dia-picker');
+  diaPicker.value = fmtDate(currentDay);
+
+  function renderDay(){
+    diaPicker.value = fmtDate(currentDay);
+    const dateStr = fmtDate(currentDay);
+    const titleEl = document.getElementById('dia-title');
+    const weekend = isWeekend(currentDay);
+    titleEl.textContent = currentDay.toLocaleDateString('es-ES', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
+    const grid = document.getElementById('dia-grid');
+    grid.innerHTML = '';
+
+    if(weekend && !settings.weekendEnabled){
+      grid.innerHTML = '<div style="grid-column:1/-1;color:var(--muted);font-family:var(--mono);font-size:13px;padding:20px 0;">Fin de semana — mercado cerrado (activa el modo cripto para registrar sáb/dom).</div>';
+      return;
+    }
+
+    HOURS.forEach(h=>{
+      const state = getCellState(dateStr, h);
+      const cell = document.createElement('div');
+      cell.className = 'hour-cell' + (state ? ' '+state : '');
+      cell.innerHTML = `<div class="h">${String(h).padStart(2,'0')}:00 – ${String(h+1).padStart(2,'0')}:00</div><div class="state">${stateLabel(state)}</div>`;
+      cell.addEventListener('click', ()=>{
+        const cur = getCellState(dateStr, h);
+        const nx = nextState(cur);
+        setCellState(dateStr, h, nx);
+        renderDay();
+        renderHeatmap();
+      });
+      grid.appendChild(cell);
+    });
+  }
+
+  document.getElementById('dia-prev').addEventListener('click', ()=>{ currentDay.setDate(currentDay.getDate()-1); renderDay(); });
+  document.getElementById('dia-next').addEventListener('click', ()=>{ currentDay.setDate(currentDay.getDate()+1); renderDay(); });
+  document.getElementById('dia-today').addEventListener('click', ()=>{ currentDay = new Date(); renderDay(); });
+  diaPicker.addEventListener('change', ()=>{ currentDay = parseDate(diaPicker.value); renderDay(); });
+
+  // ---------- WEEK VIEW ----------
+  let currentWeekMonday = mondayOf(new Date());
+  function mondayOf(d){
+    const nd = new Date(d);
+    const dow = nd.getDay();
+    const diff = (dow===0 ? -6 : 1-dow);
+    nd.setDate(nd.getDate()+diff);
+    nd.setHours(0,0,0,0);
+    return nd;
+  }
+  function renderWeek(){
+    const days = settings.weekendEnabled ? 7 : 5;
+    const weekDates = Array.from({length:days}, (_,i)=>{ const d=new Date(currentWeekMonday); d.setDate(d.getDate()+i); return d; });
+    const rangeEl = document.getElementById('sem-range');
+    const last = weekDates[weekDates.length-1];
+    rangeEl.textContent = `${currentWeekMonday.toLocaleDateString('es-ES',{day:'numeric',month:'short'})} – ${last.toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}`;
+
+    const table = document.getElementById('sem-table');
+    let html = '<tr><th></th>' + weekDates.map(d=>`<th>${DOW_SHORT[d.getDay()]}<br>${d.getDate()}</th>`).join('') + '</tr>';
+    HOURS.forEach(h=>{
+      html += `<tr><td class="hourlabel">${String(h).padStart(2,'0')}:00</td>`;
+      weekDates.forEach(d=>{
+        const ds = fmtDate(d);
+        const state = getCellState(ds, h);
+        html += `<td><span class="wcell ${state||'empty'}" data-date="${ds}" data-hour="${h}" title="${d.toLocaleDateString('es-ES')} ${h}:00 — ${stateLabel(state)}"></span></td>`;
+      });
+      html += '</tr>';
+    });
+    table.innerHTML = html;
+
+    table.querySelectorAll('.wcell').forEach(cell=>{
+      cell.addEventListener('click', ()=>{
+        const ds = cell.dataset.date, h = Number(cell.dataset.hour);
+        const cur = getCellState(ds, h);
+        setCellState(ds, h, nextState(cur));
+        renderWeek();
+        renderHeatmap();
+      });
+    });
+  }
+  document.getElementById('sem-prev').addEventListener('click', ()=>{ currentWeekMonday.setDate(currentWeekMonday.getDate()-7); renderWeek(); });
+  document.getElementById('sem-next').addEventListener('click', ()=>{ currentWeekMonday.setDate(currentWeekMonday.getDate()+7); renderWeek(); });
+  document.getElementById('sem-today').addEventListener('click', ()=>{ currentWeekMonday = mondayOf(new Date()); renderWeek(); });
+
+  // ---------- MONTH VIEW ----------
+  let currentMonth = new Date(); // any date within the month
+  function renderMonth(){
+    const y = currentMonth.getFullYear(), m = currentMonth.getMonth();
+    document.getElementById('mes-label').textContent = `${MONTH_NAMES[m]} ${y}`;
+
+    const hdr = document.getElementById('mes-hdr');
+    const labels = settings.weekendEnabled ? DOW_SHORT.slice(1).concat(DOW_SHORT[0]) : DOW_SHORT.slice(1,6);
+    hdr.style.gridTemplateColumns = `repeat(${labels.length},1fr)`;
+    hdr.innerHTML = labels.map(l=>`<div class="weekday-hdr">${l}</div>`).join('');
+
+    const grid = document.getElementById('mes-grid');
+    grid.style.gridTemplateColumns = `repeat(${labels.length},1fr)`;
+    grid.innerHTML = '';
+
+    const firstOfMonth = new Date(y,m,1);
+    const daysInMonth = new Date(y,m+1,0).getDate();
+
+    // leading blanks so first day aligns under correct weekday column
+    let firstDow = firstOfMonth.getDay(); // 0=Sun
+    let leading;
+    if(settings.weekendEnabled){
+      leading = (firstDow===0) ? 6 : firstDow-1; // Mon-start week incl weekend, Sun last col
+    } else {
+      leading = (firstDow===0 || firstDow===6) ? null : firstDow-1;
+    }
+
+    // Simpler robust approach: iterate all days 1..daysInMonth, skip weekends if disabled, place blanks before first visible day
+    let cells = [];
+    for(let day=1; day<=daysInMonth; day++){
+      const d = new Date(y,m,day);
+      if(!settings.weekendEnabled && isWeekend(d)) continue;
+      cells.push(d);
+    }
+    // compute blank count before first cell based on its weekday
+    if(cells.length>0){
+      const firstD = cells[0];
+      let dow = firstD.getDay();
+      let colIndex = settings.weekendEnabled ? (dow===0?6:dow-1) : (dow-1);
+      for(let i=0;i<colIndex;i++){
+        const blank = document.createElement('div');
+        grid.appendChild(blank);
+      }
+    }
+
+    cells.forEach(d=>{
+      const ds = fmtDate(d);
+      const dayData = data[ds] || {};
+      const counts = {green:0,red:0,yellow:0};
+      HOURS.forEach(h=>{ if(dayData[h]) counts[dayData[h]]++; });
+      const cellDiv = document.createElement('div');
+      cellDiv.className = 'month-day';
+      let bars = '';
+      HOURS.forEach(h=>{
+        const s = dayData[h];
+        if(s) bars += `<i class="${s}" title="${h}:00 ${stateLabel(s)}"></i>`;
+      });
+      cellDiv.innerHTML = `<div class="num">${d.getDate()}</div><div class="bars">${bars}</div>`;
+      cellDiv.addEventListener('click', ()=>{
+        currentDay = d;
+        document.querySelector('nav button[data-view="dia"]').click();
+      });
+      grid.appendChild(cellDiv);
+    });
+  }
+  document.getElementById('mes-prev').addEventListener('click', ()=>{ currentMonth.setMonth(currentMonth.getMonth()-1); renderMonth(); });
+  document.getElementById('mes-next').addEventListener('click', ()=>{ currentMonth.setMonth(currentMonth.getMonth()+1); renderMonth(); });
+  document.getElementById('mes-today').addEventListener('click', ()=>{ currentMonth = new Date(); renderMonth(); });
+
+  // ---------- HEATMAP + STATS ----------
+  function renderHeatmap(){
+    const dowCols = settings.weekendEnabled ? [1,2,3,4,5,6,0] : [1,2,3,4,5]; // Mon..Fri (+Sat,Sun)
+    const table = document.getElementById('heatmap');
+    let html = '<tr><th></th>' + dowCols.map(d=>`<th>${DOW_SHORT[d]}</th>`).join('') + '</tr>';
+
+    // aggregate
+    const agg = {}; // agg[hour][dow] = {green,red,yellow}
+    HOURS.forEach(h=>{ agg[h]={}; dowCols.forEach(d=>{ agg[h][d]={green:0,red:0,yellow:0}; }); });
+
+    let totals = {green:0,red:0,yellow:0};
+    Object.keys(data).forEach(ds=>{
+      const d = parseDate(ds);
+      const dow = d.getDay();
+      if(!dowCols.includes(dow)) return;
+      const dayData = data[ds];
+      Object.keys(dayData).forEach(hStr=>{
+        const h = Number(hStr);
+        const s = dayData[hStr];
+        if(agg[h] && agg[h][dow]){ agg[h][dow][s]++; totals[s]++; }
+      });
+    });
+
+    HOURS.forEach(h=>{
+      html += `<tr><td class="hm-hourlabel">${String(h).padStart(2,'0')}:00</td>`;
+      dowCols.forEach(d=>{
+        const c = agg[h][d];
+        const total = c.green+c.red+c.yellow;
+        if(total===0){
+          html += `<td><div class="heat-cell empty">–</div></td>`;
+        } else {
+          const dom = Object.keys(c).reduce((a,b)=> c[a]>=c[b]?a:b);
+          const pct = Math.round((c[dom]/total)*100);
+          const color = dom==='green'?'var(--green)':dom==='red'?'var(--red)':'var(--yellow)';
+          html += `<td><div class="heat-cell" style="background:${color};" title="${total} sesión(es) registradas — ${pct}% ${stateLabel(dom)}">${pct}%</div></td>`;
+        }
+      });
+      html += '</tr>';
+    });
+    table.innerHTML = html;
+
+    const grand = totals.green+totals.red+totals.yellow;
+    const statsEl = document.getElementById('stats');
+    statsEl.innerHTML = `
+      <div class="stat g"><div class="val">${totals.green}</div><div class="lbl">HORAS ALCISTAS</div></div>
+      <div class="stat r"><div class="val">${totals.red}</div><div class="lbl">HORAS BAJISTAS</div></div>
+      <div class="stat y"><div class="val">${totals.yellow}</div><div class="lbl">HORAS LATERALES</div></div>
+      <div class="stat"><div class="val">${grand}</div><div class="lbl">TOTAL REGISTRADO</div></div>
+    `;
+  }
+
+  // ---------- EXPORT / IMPORT ----------
+  document.getElementById('btn-export').addEventListener('click', ()=>{
+    const payload = { exportado: new Date().toISOString(), settings, data };
+    const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `sesiones-mercado-backup-${fmtDate(new Date())}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+  document.getElementById('btn-import').addEventListener('click', ()=>{
+    document.getElementById('file-import').click();
+  });
+  document.getElementById('file-import').addEventListener('change', (e)=>{
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = function(ev){
+      try{
+        const payload = JSON.parse(ev.target.result);
+        if(payload.data){
+          const merge = confirm("¿Fusionar con los datos actuales? Aceptar = fusionar, Cancelar = reemplazar todo.");
+          if(merge){
+            Object.keys(payload.data).forEach(ds=>{
+              data[ds] = Object.assign({}, data[ds]||{}, payload.data[ds]);
+            });
+          } else {
+            data = payload.data;
+          }
+          if(payload.settings) settings = Object.assign(settings, payload.settings);
+          saveData(); saveSettings();
+          renderAll();
+          alert("Importación completada.");
+        } else {
+          alert("El archivo no tiene el formato esperado.");
+        }
+      }catch(err){
+        alert("No se pudo leer el archivo: " + err.message);
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  });
+
+  // ---------- WEEKEND TOGGLE ----------
+  const weekendBtn = document.getElementById('btn-weekend');
+  function refreshWeekendBtn(){
+    weekendBtn.textContent = settings.weekendEnabled ? "Desactivar sáb/dom" : "Activar sáb/dom (cripto)";
+  }
+  weekendBtn.addEventListener('click', ()=>{
+    settings.weekendEnabled = !settings.weekendEnabled;
+    saveSettings();
+    refreshWeekendBtn();
+    renderAll();
+  });
+
+  function renderAll(){
+    renderDay();
+    renderWeek();
+    renderMonth();
+    renderHeatmap();
+  }
+
+  refreshWeekendBtn();
+  renderAll();
+
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+      navigator.serviceWorker.register("sw.js").catch(() => {});
+    });
+  }
+})();
+</script>
+
+</body>
+</html>
