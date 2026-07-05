@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cartera de Sesiones — Traders House</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0b0d10">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="mobile-web-app-capable" content="yes">
+<style>
+  :root{
+    --bg:#0b0d10; --panel:#14171b; --panel2:#1b1f24; --line:#2a2f36;
+    --text:#e8eaed; --muted:#8b929c; --amber:#e0a72e;
+    --green:#2fae5e; --green-dim:#1d3a2a;
+    --red:#d94f4f; --red-dim:#3a2222;
+    --yellow:#d9c24f; --yellow-dim:#3a3722;
+    --empty:#20242a;
+    --mono:'JetBrains Mono','SF Mono',Consolas,monospace;
+    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+  }
+  *{box-sizing:border-box;}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
+  header{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:linear-gradient(180deg,#0f1216,#0b0d10);}
+  h1{font-size:17px;font-weight:600;margin:0;}
+  .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px;}
+  nav{display:flex;gap:5px;background:var(--panel);padding:4px;border-radius:8px;border:1px solid var(--line);flex-wrap:wrap;}
+  nav button{background:transparent;border:none;color:var(--muted);padding:7px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);}
+  nav button.active{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line);}
+  main{padding:16px;max-width:1200px;margin:0 auto;}
+  .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
+  select,.toolbar input[type=date],.toolbar input[type=text]{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:6px;font-family:var(--sans);font-size:13px;}
+  .btn{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:8px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;}
+  .btn:hover{border-color:var(--amber);}
+  .btn.ghost{color:var(--muted);font-weight:500;}
+  .btn.primary{background:var(--amber);color:#0b0d10;border-color:var(--amber);}
+  .btn.danger{color:var(--red);}
+  .spacer{flex:1;}
+  .legend{display:flex;gap:12px;font-size:11px;color:var(--muted);align-items:center;flex-wrap:wrap;}
+  .legend span{display:flex;align-items:center;gap:4px;}
+  .dot{width:9px;height:9px;border-radius:2px;display:inline-block;}
+  .dot.g{background:var(--green);} .dot.r{background:var(--red);} .dot.y{background:var(--yellow);} .dot.e{background:var(--empty);border:1px solid var(--line);}
+
+  section.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:16px;}
+  section.panel h2{font-size:14px;margin:0 0 4px;}
+  section.panel .desc{font-size:11px;color:var(--muted);margin-bottom:12px;}
+
+  /* INSTRUMENTOS */
+  .instr-form{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
+  .instr-list{display:flex;flex-direction:column;gap:6px;}
+  .instr-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;flex-wrap:wrap;}
+  .instr-row .name{font-weight:600;font-size:13px;min-width:80px;}
+  .instr-row .market{font-family:var(--mono);font-size:10px;color:var(--muted);padding:2px 6px;border:1px solid var(--line);border-radius:4px;}
+  .instr-row.archived{opacity:0.5;}
+  .instr-row .spacer{flex:1;}
+
+  /* DAY VIEW */
+  .day-title{font-family:var(--mono);font-size:13px;color:var(--amber);margin-bottom:4px;text-transform:capitalize;}
+  .day-subtitle{font-size:12px;color:var(--muted);margin-bottom:12px;}
+  .hour-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
+  .hour-cell{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;cursor:pointer;user-select:none;}
+  .hour-cell:hover{border-color:var(--amber);}
+  .hour-cell .h{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px;}
+  .hour-cell .state{font-size:12px;font-weight:600;}
+  .hour-cell.green{background:var(--green-dim);border-color:var(--green);}
+  .hour-cell.red{background:var(--red-dim);border-color:var(--red);}
+  .hour-cell.yellow{background:var(--yellow-dim);border-color:var(--yellow);}
+
+  .session-total{margin-top:14px;padding:12px 14px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
+  .session-total b{font-family:var(--mono);}
+  .badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono);}
+  .badge.green{background:var(--green);color:#0b0d10;}
+  .badge.red{background:var(--red);color:#0b0d10;}
+  .badge.yellow{background:var(--yellow);color:#0b0d10;}
+  .badge.empty{background:var(--empty);color:var(--muted);}
+
+  /* WEEK TABLE */
+  .week-table{width:100%;border-collapse:collapse;font-size:12px;}
+  .week-table th{padding:8px 6px;color:var(--muted);font-weight:600;text-align:center;border-bottom:1px solid var(--line);font-family:var(--mono);}
+  .week-table td{padding:4px;text-align:center;border:1px solid var(--line);}
+  .week-table td.name-cell{text-align:left;font-weight:600;font-size:12px;padding-left:10px;}
+  .week-table tr.portfolio-row td{background:#181c22;font-weight:700;}
+  .wblock{display:inline-flex;align-items:center;justify-content:center;width:100%;height:32px;border-radius:5px;cursor:pointer;font-family:var(--mono);font-size:11px;color:#0b0d10;font-weight:700;}
+  .wblock.green{background:var(--green);} .wblock.red{background:var(--red);} .wblock.yellow{background:var(--yellow);}
+  .wblock.empty{background:var(--empty);color:var(--muted);font-weight:400;}
+
+  /* MONTH VIEW */
+  .month-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
+  .month-day{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:60px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;}
+  .month-day:hover{border-color:var(--amber);}
+  .month-day .num{font-family:var(--mono);font-size:11px;color:var(--muted);}
+  .month-day .total{margin-top:6px;}
+  .weekday-hdr{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;text-align:center;padding-bottom:4px;}
+
+  /* STATS PANEL */
+  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:16px;}
+  .stat-card{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:14px;}
+  .stat-card .lbl{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
+  .stat-card .val{font-size:18px;font-weight:700;font-family:var(--mono);}
+  .stat-card .val.green{color:var(--green);} .stat-card .val.red{color:var(--red);}
+
+  .rank-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono);}
+  .rank-table th{text-align:left;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);font-family:var(--sans);font-weight:600;font-size:11px;text-transform:uppercase;}
+  .rank-table td{padding:7px 8px;border-bottom:1px solid var(--line);}
+  .rank-table td.pct-green{color:var(--green);font-weight:700;}
+  .rank-table td.pct-red{color:var(--red);font-weight:700;}
+
+  .heatmap-table{border-collapse:collapse;font-family:var(--mono);font-size:11px;width:100%;}
+  .heatmap-table th{color:var(--muted);padding:4px 6px;text-transform:capitalize;font-weight:600;}
+  .heatmap-table td{text-align:center;padding:0;}
+  .heat-cell{width:100%;height:28px;display:flex;align-items:center;justify-content:center;color:#0b0d10;font-weight:700;border-radius:2px;}
+  .heat-cell.empty{color:var(--muted);background:var(--empty);font-weight:400;}
+  .hm-hourlabel{color:var(--muted);padding-right:8px;text-align:right;}
+
+  .turn-hours{font-size:12px;color:var(--muted);margin-top:8px;}
+  .turn-hours b{color:var(--amber);font-family:var(--mono);}
+
+  footer{text-align:center;padding:20px;color:var(--muted);font-size:11px;font-family:var(--mono);}
+  .hidden{display:none !important;}
+  input[type=file]{display:none;}
+  .empty-msg{color:var(--muted);font-family:var(--mono);font-size:13px;padding:20px 0;text-align:center;}
+
+  @media (max-width:640px){
+    .hour-grid{grid-template-columns:repeat(2,1fr);}
+    .month-grid{grid-template-columns:repeat(5,1fr);gap:4px;}
+    .month-day{padding:5px;min-height:44px;}
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Cartera de Sesiones</h1>
+    <div class="sub">TRADERS HOUSE · seguimiento por instrumento · Europa 09:00–17:30 · USA 15:30–22:00 (hora ESP)</div>
+  </div>
+  <nav>
+    <button class="active" data-view="dia">Día</button>
+    <button data-view="semana">Semana</button>
+    <button data-view="mes">Mes</button>
+    <button data-view="instrumentos">Instrumentos</button>
+  </nav>
+</header>
+
+<main>
+
+  <!-- INSTRUMENTOS -->
+  <div id="view-instrumentos" class="hidden">
+    <section class="panel">
+      <h2>Añadir instrumento</h2>
+      <div class="instr-form">
+        <input type="text" id="new-instr-name" placeholder="Nombre (ej. STM)" style="min-width:160px;">
+        <select id="new-instr-market">
+          <option value="EU">Europeo (09:00–17:30)</option>
+          <option value="US">Americano (15:30–22:00 ESP)</option>
+        </select>
+        <button class="btn primary" id="btn-add-instr">Añadir</button>
+      </div>
+    </section>
+    <section class="panel">
+      <h2>Cartera activa</h2>
+      <div class="instr-list" id="instr-list-active"></div>
+    </section>
+    <section class="panel">
+      <h2>Archivados</h2>
+      <div class="desc">Instrumentos de los que has salido. Conservan su histórico para las estadísticas.</div>
+      <div class="instr-list" id="instr-list-archived"></div>
+    </section>
+  </div>
+
+  <!-- DAY VIEW -->
+  <div id="view-dia">
+    <div class="toolbar">
+      <button class="btn" id="dia-prev">← Día</button>
+      <input type="date" id="dia-picker">
+      <button class="btn" id="dia-next">Día →</button>
+      <button class="btn ghost" id="dia-today">Hoy</button>
+      <select id="dia-instr-select" style="min-width:160px;"></select>
+      <div class="spacer"></div>
+      <div class="legend">
+        <span><i class="dot g"></i>Alcista</span>
+        <span><i class="dot r"></i>Bajista</span>
+        <span><i class="dot y"></i>Lateral</span>
+        <span><i class="dot e"></i>Sin registrar</span>
+      </div>
+    </div>
+    <div class="day-title" id="dia-title"></div>
+    <div class="day-subtitle" id="dia-subtitle"></div>
+    <div id="dia-content"></div>
+  </div>
+
+  <!-- WEEK VIEW -->
+  <div id="view-semana" class="hidden">
+    <div class="toolbar">
+      <button class="btn" id="sem-prev">← Semana</button>
+      <span id="sem-range" style="font-family:var(--mono);font-size:13px;"></span>
+      <button class="btn" id="sem-next">Semana →</button>
+      <button class="btn ghost" id="sem-today">Esta semana</button>
+    </div>
+    <div style="overflow-x:auto;"><table class="week-table" id="sem-table"></table></div>
+    <div id="stats-semana"></div>
+  </div>
+
+  <!-- MONTH VIEW -->
+  <div id="view-mes" class="hidden">
+    <div class="toolbar">
+      <button class="btn" id="mes-prev">← Mes</button>
+      <span id="mes-label" style="font-family:var(--mono);font-size:13px;text-transform:capitalize;"></span>
+      <button class="btn" id="mes-next">Mes →</button>
+      <button class="btn ghost" id="mes-today">Este mes</button>
+    </div>
+    <div class="month-grid" id="mes-hdr"></div>
+    <div class="month-grid" id="mes-grid" style="margin-top:6px;"></div>
+    <div id="stats-mes"></div>
+  </div>
+
+  <section class="panel">
+    <h2>Copia de seguridad</h2>
+    <div class="desc">Los datos se guardan automáticamente en este navegador.</div>
+    <div class="toolbar" style="margin-bottom:0;">
+      <button class="btn" id="btn-export">Exportar JSON</button>
+      <button class="btn" id="btn-import">Importar JSON</button>
+      <input type="file" id="file-import" accept="application/json">
+    </div>
+  </section>
+
+</main>
+
+<footer>Cartera de Sesiones v2.0 — Traders House — datos almacenados localmente en este navegador</footer>
+
+<script>
+(function(){
+"use strict";
+
+const STORAGE_KEY = "th_cartera_sesiones_v1";
+const DOW_SHORT = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+
+const EU_SLOTS = [
+  {label:"09:00–10:00"},{label:"10:00–11:00"},{label:"11:00–12:00"},{label:"12:00–13:00"},
+  {label:"13:00–14:00"},{label:"14:00–15:00"},{label:"15:00–16:00"},{label:"16:00–17:00"},
+  {label:"17:00–17:30"}
+];
+const US_SLOTS = [
+  {label:"15:30–16:00"},{label:"16:00–17:00"},{label:"17:00–18:00"},{label:"18:00–19:00"},
+  {label:"19:00–20:00"},{label:"20:00–21:00"},{label:"21:00–22:00"}
+];
+function getSlots(market){ return market==='US' ? US_SLOTS : EU_SLOTS; }
+function marketLabel(m){ return m==='US' ? 'Americano' : 'Europeo'; }
+
+let store = load();
+function load(){
+  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {instruments:[], data:{}}; }
+  catch(e){ return {instruments:[], data:{}}; }
+}
+function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
+
+function uid(){ return 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+
+function fmtDate(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
+function parseDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function isWeekend(d){ const dow=d.getDay(); return dow===0||dow===6; }
+function mondayOf(d){ const nd=new Date(d); const dow=nd.getDay(); const diff=(dow===0?-6:1-dow); nd.setDate(nd.getDate()+diff); nd.setHours(0,0,0,0); return nd; }
+
+function getInstrument(id){ return store.instruments.find(i=>i.id===id); }
+function activeInstruments(){ return store.instruments.filter(i=>!i.archived); }
+function archivedInstruments(){ return store.instruments.filter(i=>i.archived); }
+
+function getSlotState(instrId, dateStr, slotIdx){
+  const d = store.data[instrId];
+  if(!d || !d[dateStr]) return null;
+  return d[dateStr][slotIdx] || null;
+}
+function setSlotState(instrId, dateStr, slotIdx, state){
+  if(!store.data[instrId]) store.data[instrId] = {};
+  if(!store.data[instrId][dateStr]) store.data[instrId][dateStr] = {};
+  if(state===null){
+    delete store.data[instrId][dateStr][slotIdx];
+    if(Object.keys(store.data[instrId][dateStr]).length===0) delete store.data[instrId][dateStr];
+  } else {
+    store.data[instrId][dateStr][slotIdx] = state;
+  }
+  save();
+}
+function nextState(cur){
+  if(cur===null) return "green";
+  if(cur==="green") return "red";
+  if(cur==="red") return "yellow";
+  return null;
+}
+function stateLabel(s){
+  if(s==="green") return "🟩 Alcista"; if(s==="red") return "🟥 Bajista"; if(s==="yellow") return "🟨 Lateral";
+  return "⬜ Sin registrar";
+}
+function stateEmoji(s){
+  if(s==="green") return "🟩"; if(s==="red") return "🟥"; if(s==="yellow") return "🟨"; return "";
+}
+
+// dominant color among filled slots of an instrument on a date; null if no data
+function sessionTotal(instrId, dateStr){
+  const d = store.data[instrId] && store.data[instrId][dateStr];
+  if(!d) return null;
+  const counts = {green:0,red:0,yellow:0};
+  Object.values(d).forEach(s=>{ if(counts[s]!==undefined) counts[s]++; });
+  const total = counts.green+counts.red+counts.yellow;
+  if(total===0) return null;
+  return Object.keys(counts).reduce((a,b)=> counts[a]>=counts[b]?a:b);
+}
+
+// portfolio total for a date: dominant among all instruments' session totals that day
+function portfolioTotal(dateStr){
+  const counts = {green:0,red:0,yellow:0};
+  store.instruments.forEach(instr=>{
+    const t = sessionTotal(instr.id, dateStr);
+    if(t) counts[t]++;
+  });
+  const total = counts.green+counts.red+counts.yellow;
+  if(total===0) return null;
+  return Object.keys(counts).reduce((a,b)=> counts[a]>=counts[b]?a:b);
+}
+
+// ---------- VIEW SWITCHING ----------
+const views = {
+  dia: document.getElementById('view-dia'),
+  semana: document.getElementById('view-semana'),
+  mes: document.getElementById('view-mes'),
+  instrumentos: document.getElementById('view-instrumentos')
+};
+document.querySelectorAll('nav button').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    Object.values(views).forEach(v=>v.classList.add('hidden'));
+    views[btn.dataset.view].classList.remove('hidden');
+    if(btn.dataset.view==='dia') renderDay();
+    if(btn.dataset.view==='semana') renderWeek();
+    if(btn.dataset.view==='mes') renderMonth();
+    if(btn.dataset.view==='instrumentos') renderInstrumentos();
+  });
+});
+
+// ---------- INSTRUMENTOS ----------
+document.getElementById('btn-add-instr').addEventListener('click', ()=>{
+  const nameInput = document.getElementById('new-instr-name');
+  const name = nameInput.value.trim();
+  if(!name){ alert('Escribe un nombre.'); return; }
+  const market = document.getElementById('new-instr-market').value;
+  store.instruments.push({id:uid(), name, market, archived:false, createdAt:fmtDate(new Date())});
+  save();
+  nameInput.value = '';
+  renderInstrumentos();
+  refreshInstrSelect();
+});
+
+function renderInstrumentos(){
+  const activeEl = document.getElementById('instr-list-active');
+  const archivedEl = document.getElementById('instr-list-archived');
+  activeEl.innerHTML = '';
+  archivedEl.innerHTML = '';
+
+  activeInstruments().forEach(instr=>{
+    const row = document.createElement('div');
+    row.className = 'instr-row';
+    row.innerHTML = `<span class="name">${instr.name}</span><span class="market">${marketLabel(instr.market)}</span><span class="spacer"></span>`;
+    const archiveBtn = document.createElement('button');
+    archiveBtn.className = 'btn ghost';
+    archiveBtn.textContent = 'Salir (archivar)';
+    archiveBtn.addEventListener('click', ()=>{ instr.archived = true; save(); renderInstrumentos(); refreshInstrSelect(); });
+    row.appendChild(archiveBtn);
+    activeEl.appendChild(row);
+  });
+  if(activeInstruments().length===0) activeEl.innerHTML = '<div class="empty-msg">Sin instrumentos activos. Añade el primero arriba.</div>';
+
+  archivedInstruments().forEach(instr=>{
+    const row = document.createElement('div');
+    row.className = 'instr-row archived';
+    row.innerHTML = `<span class="name">${instr.name}</span><span class="market">${marketLabel(instr.market)}</span><span class="spacer"></span>`;
+    const reactBtn = document.createElement('button');
+    reactBtn.className = 'btn ghost';
+    reactBtn.textContent = 'Reactivar';
+    reactBtn.addEventListener('click', ()=>{ instr.archived = false; save(); renderInstrumentos(); refreshInstrSelect(); });
+    const delBtn = document.createElement('button');
+    delBtn.className = 'btn danger ghost';
+    delBtn.textContent = 'Eliminar definitivamente';
+    delBtn.addEventListener('click', ()=>{
+      if(confirm(`¿Eliminar "${instr.name}" y todo su histórico? Esta acción no se puede deshacer.`)){
+        store.instruments = store.instruments.filter(i=>i.id!==instr.id);
+        delete store.data[instr.id];
+        save(); renderInstrumentos(); refreshInstrSelect();
+      }
+    });
+    row.appendChild(reactBtn); row.appendChild(delBtn);
+    archivedEl.appendChild(row);
+  });
+  if(archivedInstruments().length===0) archivedEl.innerHTML = '<div class="empty-msg">No hay instrumentos archivados.</div>';
+}
+
+// ---------- DAY VIEW ----------
+let currentDay = new Date();
+let selectedInstrId = null;
+const diaPicker = document.getElementById('dia-picker');
+diaPicker.value = fmtDate(currentDay);
+const diaSelect = document.getElementById('dia-instr-select');
+
+function refreshInstrSelect(){
+  const prev = diaSelect.value;
+  diaSelect.innerHTML = '';
+  const all = store.instruments;
+  if(all.length===0){
+    diaSelect.innerHTML = '<option value="">— añade un instrumento —</option>';
+    selectedInstrId = null;
+    return;
+  }
+  all.forEach(instr=>{
+    const opt = document.createElement('option');
+    opt.value = instr.id;
+    opt.textContent = `${instr.name} (${marketLabel(instr.market)})${instr.archived?' — archivado':''}`;
+    diaSelect.appendChild(opt);
+  });
+  if(prev && all.some(i=>i.id===prev)) diaSelect.value = prev;
+  selectedInstrId = diaSelect.value;
+}
+diaSelect.addEventListener('change', ()=>{ selectedInstrId = diaSelect.value; renderDay(); });
+
+function renderDay(){
+  diaPicker.value = fmtDate(currentDay);
+  const dateStr = fmtDate(currentDay);
+  document.getElementById('dia-title').textContent = currentDay.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const content = document.getElementById('dia-content');
+  content.innerHTML = '';
+
+  if(!selectedInstrId || !getInstrument(selectedInstrId)){
+    document.getElementById('dia-subtitle').textContent = '';
+    content.innerHTML = '<div class="empty-msg">Añade un instrumento en la pestaña "Instrumentos" para empezar a registrar.</div>';
+    return;
+  }
+  const instr = getInstrument(selectedInstrId);
+  document.getElementById('dia-subtitle').textContent = `${instr.name} · ${marketLabel(instr.market)}`;
+  const slots = getSlots(instr.market);
+
+  const grid = document.createElement('div');
+  grid.className = 'hour-grid';
+  slots.forEach((slot, idx)=>{
+    const state = getSlotState(instr.id, dateStr, idx);
+    const cell = document.createElement('div');
+    cell.className = 'hour-cell' + (state?' '+state:'');
+    cell.innerHTML = `<div class="h">${slot.label}</div><div class="state">${stateLabel(state)}</div>`;
+    cell.addEventListener('click', ()=>{
+      const cur = getSlotState(instr.id, dateStr, idx);
+      setSlotState(instr.id, dateStr, idx, nextState(cur));
+      renderDay();
+    });
+    grid.appendChild(cell);
+  });
+  content.appendChild(grid);
+
+  const total = sessionTotal(instr.id, dateStr);
+  const totalDiv = document.createElement('div');
+  totalDiv.className = 'session-total';
+  totalDiv.innerHTML = `<span>Total sesión ${instr.name}:</span> <span class="badge ${total||'empty'}">${total?stateEmoji(total)+' '+stateLabel(total).split(' ')[1]:'Sin registrar'}</span>`;
+  content.appendChild(totalDiv);
+
+  const ptotal = portfolioTotal(dateStr);
+  const pDiv = document.createElement('div');
+  pDiv.className = 'session-total';
+  pDiv.innerHTML = `<span>Total cartera (todos los instrumentos) ese día:</span> <span class="badge ${ptotal||'empty'}">${ptotal?stateEmoji(ptotal)+' '+stateLabel(ptotal).split(' ')[1]:'Sin registrar'}</span>`;
+  content.appendChild(pDiv);
+}
+document.getElementById('dia-prev').addEventListener('click', ()=>{ currentDay.setDate(currentDay.getDate()-1); renderDay(); });
+document.getElementById('dia-next').addEventListener('click', ()=>{ currentDay.setDate(currentDay.getDate()+1); renderDay(); });
+document.getElementById('dia-today').addEventListener('click', ()=>{ currentDay = new Date(); renderDay(); });
+diaPicker.addEventListener('change', ()=>{ currentDay = parseDate(diaPicker.value); renderDay(); });
+
+function goToDay(instrId, dateStr){
+  selectedInstrId = instrId;
+  currentDay = parseDate(dateStr);
+  diaSelect.value = instrId;
+  document.querySelector('nav button[data-view="dia"]').click();
+}
+
+// ---------- WEEK VIEW ----------
+let currentWeekMonday = mondayOf(new Date());
+function renderWeek(){
+  const weekDates = Array.from({length:5},(_,i)=>{ const d=new Date(currentWeekMonday); d.setDate(d.getDate()+i); return d; });
+  document.getElementById('sem-range').textContent = `${currentWeekMonday.toLocaleDateString('es-ES',{day:'numeric',month:'short'})} – ${weekDates[4].toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}`;
+
+  const table = document.getElementById('sem-table');
+  const instrs = store.instruments;
+  let html = '<tr><th style="text-align:left;padding-left:10px;">Instrumento</th>' + weekDates.map(d=>`<th>${DOW_SHORT[d.getDay()]}<br>${d.getDate()}</th>`).join('') + '</tr>';
+
+  instrs.forEach(instr=>{
+    html += `<tr${instr.archived?' style="opacity:0.5;"':''}><td class="name-cell">${instr.name}</td>`;
+    weekDates.forEach(d=>{
+      const ds = fmtDate(d);
+      const total = sessionTotal(instr.id, ds);
+      html += `<td><span class="wblock ${total||'empty'}" data-instr="${instr.id}" data-date="${ds}">${total?stateEmoji(total):'–'}</span></td>`;
+    });
+    html += '</tr>';
+  });
+
+  html += '<tr class="portfolio-row"><td class="name-cell">Cartera (total)</td>';
+  weekDates.forEach(d=>{
+    const ds = fmtDate(d);
+    const total = portfolioTotal(ds);
+    html += `<td><span class="wblock ${total||'empty'}">${total?stateEmoji(total):'–'}</span></td>`;
+  });
+  html += '</tr>';
+
+  table.innerHTML = html;
+  table.querySelectorAll('.wblock[data-instr]').forEach(el=>{
+    el.addEventListener('click', ()=> goToDay(el.dataset.instr, el.dataset.date));
+  });
+
+  renderStats('stats-semana', weekDates.map(fmtDate));
+}
+document.getElementById('sem-prev').addEventListener('click', ()=>{ currentWeekMonday.setDate(currentWeekMonday.getDate()-7); renderWeek(); });
+document.getElementById('sem-next').addEventListener('click', ()=>{ currentWeekMonday.setDate(currentWeekMonday.getDate()+7); renderWeek(); });
+document.getElementById('sem-today').addEventListener('click', ()=>{ currentWeekMonday = mondayOf(new Date()); renderWeek(); });
+
+// ---------- MONTH VIEW ----------
+let currentMonth = new Date();
+function renderMonth(){
+  const y = currentMonth.getFullYear(), m = currentMonth.getMonth();
+  document.getElementById('mes-label').textContent = `${MONTH_NAMES[m]} ${y}`;
+  const hdr = document.getElementById('mes-hdr');
+  hdr.innerHTML = DOW_SHORT.slice(1,6).map(l=>`<div class="weekday-hdr">${l}</div>`).join('');
+
+  const grid = document.getElementById('mes-grid');
+  grid.innerHTML = '';
+  const daysInMonth = new Date(y,m+1,0).getDate();
+  let cells = [];
+  for(let day=1; day<=daysInMonth; day++){
+    const d = new Date(y,m,day);
+    if(isWeekend(d)) continue;
+    cells.push(d);
+  }
+  if(cells.length>0){
+    const dow = cells[0].getDay();
+    const colIndex = dow-1;
+    for(let i=0;i<colIndex;i++){ grid.appendChild(document.createElement('div')); }
+  }
+  const monthDates = [];
+  cells.forEach(d=>{
+    const ds = fmtDate(d);
+    monthDates.push(ds);
+    const total = portfolioTotal(ds);
+    const cellDiv = document.createElement('div');
+    cellDiv.className = 'month-day';
+    cellDiv.innerHTML = `<div class="num">${d.getDate()}</div><div class="total">${total?`<span class="badge ${total}">${stateEmoji(total)}</span>`:'<span style="color:var(--muted);font-family:var(--mono);font-size:11px;">–</span>'}</div>`;
+    cellDiv.addEventListener('click', ()=>{
+      currentDay = d;
+      if(store.instruments.length>0){
+        goToDay(selectedInstrId && getInstrument(selectedInstrId) ? selectedInstrId : store.instruments[0].id, ds);
+      }
+    });
+    grid.appendChild(cellDiv);
+  });
+
+  renderStats('stats-mes', monthDates);
+}
+document.getElementById('mes-prev').addEventListener('click', ()=>{ currentMonth.setMonth(currentMonth.getMonth()-1); renderMonth(); });
+document.getElementById('mes-next').addEventListener('click', ()=>{ currentMonth.setMonth(currentMonth.getMonth()+1); renderMonth(); });
+document.getElementById('mes-today').addEventListener('click', ()=>{ currentMonth = new Date(); renderMonth(); });
+
+// ---------- STATS PANEL (shared by week & month) ----------
+function renderStats(containerId, dateList){
+  const container = document.getElementById(containerId);
+  container.innerHTML = '';
+  const instrs = activeInstruments();
+  if(instrs.length===0){
+    container.innerHTML = '<section class="panel"><div class="empty-msg">Añade instrumentos para ver estadísticas.</div></section>';
+    return;
+  }
+
+  // per-instrument stats over dateList period
+  const perInstr = instrs.map(instr=>{
+    let g=0,r=0,y=0;
+    dateList.forEach(ds=>{
+      const t = sessionTotal(instr.id, ds);
+      if(t==='green') g++; else if(t==='red') r++; else if(t==='yellow') y++;
+    });
+    const totalDays = g+r+y;
+    return {instr, g, r, y, totalDays, pctGreen: totalDays?Math.round(g/totalDays*100):null, pctRed: totalDays?Math.round(r/totalDays*100):null, pctYellow: totalDays?Math.round(y/totalDays*100):null};
+  }).filter(s=>s.totalDays>0);
+
+  let best=null, worst=null;
+  perInstr.forEach(s=>{
+    if(best===null || s.pctGreen>best.pctGreen) best=s;
+    if(worst===null || s.pctGreen<worst.pctGreen) worst=s;
+  });
+
+  const statsGrid = document.createElement('section');
+  statsGrid.className = 'panel';
+  statsGrid.innerHTML = `<h2>Resumen del periodo</h2><div class="desc">Calculado sobre los días con datos en este periodo.</div>`;
+  const grid = document.createElement('div');
+  grid.className = 'stats-grid';
+  grid.innerHTML = `
+    <div class="stat-card"><div class="lbl">Mejor comportamiento</div><div class="val green">${best?best.instr.name+' · '+best.pctGreen+'% verde':'—'}</div></div>
+    <div class="stat-card"><div class="lbl">Peor comportamiento</div><div class="val red">${worst?worst.instr.name+' · '+worst.pctRed+'% rojo':'—'}</div></div>
+    <div class="stat-card"><div class="lbl">Instrumentos con datos</div><div class="val">${perInstr.length} / ${instrs.length}</div></div>
+  `;
+  statsGrid.appendChild(grid);
+  container.appendChild(statsGrid);
+
+  // Ranking table
+  const rankSection = document.createElement('section');
+  rankSection.className = 'panel';
+  rankSection.innerHTML = `<h2>Ranking de instrumentos</h2><div class="desc">Ordenado por % de días alcistas en este periodo.</div>`;
+  const sorted = [...perInstr].sort((a,b)=>b.pctGreen-a.pctGreen);
+  let rankHtml = '<table class="rank-table"><tr><th>#</th><th>Instrumento</th><th>Días</th><th>% Verde</th><th>% Rojo</th><th>% Lateral</th></tr>';
+  sorted.forEach((s,i)=>{
+    rankHtml += `<tr><td>${i+1}</td><td>${s.instr.name}</td><td>${s.totalDays}</td><td class="pct-green">${s.pctGreen}%</td><td class="pct-red">${s.pctRed}%</td><td>${s.pctYellow}%</td></tr>`;
+  });
+  rankHtml += '</table>';
+  if(sorted.length===0) rankHtml = '<div class="empty-msg">Sin datos suficientes en este periodo.</div>';
+  rankSection.innerHTML += rankHtml;
+  container.appendChild(rankSection);
+
+  // Individual heatmap (selectable) + turn hours — aggregated over FULL history
+  const heatSection = document.createElement('section');
+  heatSection.className = 'panel';
+  heatSection.innerHTML = `<h2>Mapa de calor individual</h2><div class="desc">Color dominante por hora y día de la semana, sobre todo el histórico del instrumento seleccionado.</div>`;
+  const selWrap = document.createElement('div');
+  selWrap.className = 'toolbar';
+  selWrap.style.marginBottom = '10px';
+  const sel = document.createElement('select');
+  instrs.forEach(instr=>{ const o=document.createElement('option'); o.value=instr.id; o.textContent=instr.name; sel.appendChild(o); });
+  selWrap.appendChild(sel);
+  heatSection.appendChild(selWrap);
+  const heatDiv = document.createElement('div');
+  heatDiv.style.overflowX = 'auto';
+  heatSection.appendChild(heatDiv);
+  const turnDiv = document.createElement('div');
+  turnDiv.className = 'turn-hours';
+  heatSection.appendChild(turnDiv);
+
+  function drawIndividualHeatmap(instrId){
+    const instr = getInstrument(instrId);
+    if(!instr) return;
+    const slots = getSlots(instr.market);
+    const agg = {}; slots.forEach((s,idx)=>{ agg[idx]={}; [1,2,3,4,5].forEach(dow=>{ agg[idx][dow]={green:0,red:0,yellow:0}; }); });
+    const turnCounts = {};
+    slots.forEach((s,idx)=>turnCounts[idx]=0);
+
+    const allDates = Object.keys(store.data[instrId]||{});
+    allDates.forEach(ds=>{
+      const d = parseDate(ds);
+      const dow = d.getDay();
+      const dayData = store.data[instrId][ds];
+      let prevState = null;
+      slots.forEach((slot, idx)=>{
+        const s = dayData[idx];
+        if(s && agg[idx] && agg[idx][dow]) agg[idx][dow][s]++;
+        if(s && prevState && s!==prevState) turnCounts[idx]++;
+        if(s) prevState = s;
+      });
+    });
+
+    let html = '<table class="heatmap-table"><tr><th></th>' + [1,2,3,4,5].map(d=>`<th>${DOW_SHORT[d]}</th>`).join('') + '</tr>';
+    slots.forEach((slot, idx)=>{
+      html += `<tr><td class="hm-hourlabel">${slot.label.split('–')[0]}</td>`;
+      [1,2,3,4,5].forEach(dow=>{
+        const c = agg[idx][dow];
+        const total = c.green+c.red+c.yellow;
+        if(total===0){ html += `<td><div class="heat-cell empty">–</div></td>`; }
+        else{
+          const dom = Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
+          const pct = Math.round((c[dom]/total)*100);
+          const color = dom==='green'?'var(--green)':dom==='red'?'var(--red)':'var(--yellow)';
+          html += `<td><div class="heat-cell" style="background:${color};">${pct}%</div></td>`;
+        }
+      });
+      html += '</tr>';
+    });
+    html += '</table>';
+    heatDiv.innerHTML = html;
+
+    let topSlotIdx = null, topCount = -1;
+    Object.keys(turnCounts).forEach(idx=>{ if(turnCounts[idx]>topCount){ topCount=turnCounts[idx]; topSlotIdx=idx; } });
+    if(topCount>0){
+      turnDiv.innerHTML = `Hora de giro más frecuente para <b>${instr.name}</b>: <b>${slots[topSlotIdx].label}</b> (${topCount} cambio(s) de tendencia registrados ahí).`;
+    } else {
+      turnDiv.innerHTML = `Sin suficientes datos todavía para detectar horas de giro de <b>${instr.name}</b>.`;
+    }
+  }
+  sel.addEventListener('change', ()=> drawIndividualHeatmap(sel.value));
+  if(instrs.length>0) drawIndividualHeatmap(instrs[0].id);
+  container.appendChild(heatSection);
+
+  // Portfolio-wide heatmap — aggregated over full history, all instruments combined (normalized by market slot position isn't directly comparable EU vs US, so we aggregate by clock hour instead)
+  const portSection = document.createElement('section');
+  portSection.className = 'panel';
+  portSection.innerHTML = `<h2>Mapa de calor de la cartera completa</h2><div class="desc">Combina todos los instrumentos (activos y archivados) por hora de reloj y día de la semana, sobre todo el histórico.</div>`;
+  const clockAgg = {}; // clockHour(9..21) -> dow -> counts
+  for(let h=9; h<=21; h++){ clockAgg[h]={}; [1,2,3,4,5].forEach(dow=>clockAgg[h][dow]={green:0,red:0,yellow:0}); }
+  store.instruments.forEach(instr=>{
+    const slots = getSlots(instr.market);
+    const allDates = Object.keys(store.data[instr.id]||{});
+    allDates.forEach(ds=>{
+      const d = parseDate(ds); const dow = d.getDay();
+      const dayData = store.data[instr.id][ds];
+      slots.forEach((slot, idx)=>{
+        const s = dayData[idx];
+        if(!s) return;
+        const hourNum = parseInt(slot.label.split(':')[0].split('–')[0],10);
+        if(clockAgg[hourNum] && clockAgg[hourNum][dow]) clockAgg[hourNum][dow][s]++;
+      });
+    });
+  });
+  let portHtml = '<table class="heatmap-table"><tr><th></th>' + [1,2,3,4,5].map(d=>`<th>${DOW_SHORT[d]}</th>`).join('') + '</tr>';
+  for(let h=9; h<=21; h++){
+    portHtml += `<tr><td class="hm-hourlabel">${String(h).padStart(2,'0')}:00</td>`;
+    [1,2,3,4,5].forEach(dow=>{
+      const c = clockAgg[h][dow]; const total=c.green+c.red+c.yellow;
+      if(total===0){ portHtml += `<td><div class="heat-cell empty">–</div></td>`; }
+      else{
+        const dom = Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
+        const pct = Math.round((c[dom]/total)*100);
+        const color = dom==='green'?'var(--green)':dom==='red'?'var(--red)':'var(--yellow)';
+        portHtml += `<td><div class="heat-cell" style="background:${color};">${pct}%</div></td>`;
+      }
+    });
+    portHtml += '</tr>';
+  }
+  portHtml += '</table>';
+  portSection.innerHTML += `<div style="overflow-x:auto;">${portHtml}</div>`;
+  container.appendChild(portSection);
+}
+
+// ---------- EXPORT / IMPORT ----------
+document.getElementById('btn-export').addEventListener('click', ()=>{
+  const payload = { exportado: new Date().toISOString(), store };
+  const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = `cartera-sesiones-backup-${fmtDate(new Date())}.json`;
+  a.click(); URL.revokeObjectURL(url);
+});
+document.getElementById('btn-import').addEventListener('click', ()=> document.getElementById('file-import').click());
+document.getElementById('file-import').addEventListener('change', (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = function(ev){
+    try{
+      const payload = JSON.parse(ev.target.result);
+      if(payload.store && payload.store.instruments){
+        const replace = confirm("¿Reemplazar todos los datos actuales por los del archivo? Cancelar = mantener los actuales (no se importará).");
+        if(replace){ store = payload.store; save(); renderAll(); alert("Importación completada."); }
+      } else { alert("El archivo no tiene el formato esperado."); }
+    }catch(err){ alert("No se pudo leer el archivo: " + err.message); }
+  };
+  reader.readAsText(file);
+  e.target.value = '';
+});
+
+function renderAll(){
+  refreshInstrSelect();
+  renderInstrumentos();
+  renderDay();
+  renderWeek();
+  renderMonth();
+}
+renderAll();
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(()=>{}); });
+}
+})();
+</script>
+</body>
+</html>
