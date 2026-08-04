@@ -29,7 +29,7 @@
   nav{display:flex;gap:5px;background:var(--panel);padding:4px;border-radius:8px;border:1px solid var(--line);flex-wrap:wrap;}
   nav button{background:transparent;border:none;color:var(--muted);padding:7px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);}
   nav button.active{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line);}
-  main{padding:16px;max-width:1200px;margin:0 auto;}
+  main{padding:16px;max-width:1000px;margin:0 auto;}
   .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
   select,.toolbar input[type=date],.toolbar input[type=text]{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:6px;font-family:var(--sans);font-size:13px;}
   .btn{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:8px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;}
@@ -56,20 +56,22 @@
   .instr-row.archived{opacity:0.5;}
   .instr-row .spacer{flex:1;}
 
-  /* DAY VIEW */
-  .day-title{font-family:var(--mono);font-size:13px;color:var(--amber);margin-bottom:4px;text-transform:capitalize;}
-  .day-subtitle{font-size:12px;color:var(--muted);margin-bottom:12px;}
-  .hour-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:8px;}
-  .hour-cell{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:12px;cursor:pointer;user-select:none;}
-  .hour-cell:hover{border-color:var(--amber);}
-  .hour-cell .h{font-family:var(--mono);font-size:11px;color:var(--muted);margin-bottom:6px;}
-  .hour-cell .state{font-size:12px;font-weight:600;}
-  .hour-cell.green{background:var(--green-dim);border-color:var(--green);}
-  .hour-cell.red{background:var(--red-dim);border-color:var(--red);}
-  .hour-cell.yellow{background:var(--yellow-dim);border-color:var(--yellow);}
+  /* DAY VIEW — one tap per instrument */
+  .day-title{font-family:var(--mono);font-size:13px;color:var(--amber);margin-bottom:12px;text-transform:capitalize;}
+  .daily-list{display:flex;flex-direction:column;gap:8px;}
+  .daily-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:10px;cursor:pointer;user-select:none;}
+  .daily-row:hover{border-color:var(--amber);}
+  .daily-row .name{font-weight:700;font-size:15px;flex:1;}
+  .daily-row .market{font-family:var(--mono);font-size:10px;color:var(--muted);padding:2px 6px;border:1px solid var(--line);border-radius:4px;}
+  .daily-row .state-label{font-size:13px;font-weight:600;color:var(--muted);}
+  .daily-row.green{background:var(--green-dim);border-color:var(--green);}
+  .daily-row.red{background:var(--red-dim);border-color:var(--red);}
+  .daily-row.yellow{background:var(--yellow-dim);border-color:var(--yellow);}
+  .daily-row.green .state-label{color:var(--green);}
+  .daily-row.red .state-label{color:var(--red);}
+  .daily-row.yellow .state-label{color:var(--yellow);}
 
   .session-total{margin-top:14px;padding:12px 14px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-  .session-total b{font-family:var(--mono);}
   .badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono);}
   .badge.green{background:var(--green);color:#0b0d10;}
   .badge.red{background:var(--red);color:#0b0d10;}
@@ -110,12 +112,8 @@
   .heatmap-table{border-collapse:collapse;font-family:var(--mono);font-size:11px;width:100%;}
   .heatmap-table th{color:var(--muted);padding:4px 6px;text-transform:capitalize;font-weight:600;}
   .heatmap-table td{text-align:center;padding:0;}
-  .heat-cell{width:100%;height:28px;display:flex;align-items:center;justify-content:center;color:#0b0d10;font-weight:700;border-radius:2px;}
+  .heat-cell{width:100%;height:34px;display:flex;align-items:center;justify-content:center;color:#0b0d10;font-weight:700;border-radius:2px;}
   .heat-cell.empty{color:var(--muted);background:var(--empty);font-weight:400;}
-  .hm-hourlabel{color:var(--muted);padding-right:8px;text-align:right;}
-
-  .turn-hours{font-size:12px;color:var(--muted);margin-top:8px;}
-  .turn-hours b{color:var(--amber);font-family:var(--mono);}
 
   footer{text-align:center;padding:20px;color:var(--muted);font-size:11px;font-family:var(--mono);}
   .hidden{display:none !important;}
@@ -123,7 +121,6 @@
   .empty-msg{color:var(--muted);font-family:var(--mono);font-size:13px;padding:20px 0;text-align:center;}
 
   @media (max-width:640px){
-    .hour-grid{grid-template-columns:repeat(2,1fr);}
     .month-grid{grid-template-columns:repeat(5,1fr);gap:4px;}
     .month-day{padding:5px;min-height:44px;}
   }
@@ -134,7 +131,7 @@
 <header>
   <div>
     <h1>Cartera de Sesiones</h1>
-    <div class="sub">TRADERS HOUSE · seguimiento por instrumento · Europa 09:00–17:30 · USA 15:30–22:00 (hora ESP)</div>
+    <div class="sub">TRADERS HOUSE · cierre diario por instrumento</div>
   </div>
   <nav>
     <button class="active" data-view="dia">Día</button>
@@ -153,8 +150,8 @@
       <div class="instr-form">
         <input type="text" id="new-instr-name" placeholder="Nombre (ej. STM)" style="min-width:160px;">
         <select id="new-instr-market">
-          <option value="EU">Europeo (09:00–17:30)</option>
-          <option value="US">Americano (15:30–22:00 ESP)</option>
+          <option value="EU">Europeo</option>
+          <option value="US">Americano</option>
         </select>
         <button class="btn primary" id="btn-add-instr">Añadir</button>
       </div>
@@ -177,7 +174,6 @@
       <input type="date" id="dia-picker">
       <button class="btn" id="dia-next">Día →</button>
       <button class="btn ghost" id="dia-today">Hoy</button>
-      <select id="dia-instr-select" style="min-width:160px;"></select>
       <div class="spacer"></div>
       <div class="legend">
         <span><i class="dot g"></i>Alcista</span>
@@ -187,7 +183,6 @@
       </div>
     </div>
     <div class="day-title" id="dia-title"></div>
-    <div class="day-subtitle" id="dia-subtitle"></div>
     <div id="dia-content"></div>
   </div>
 
@@ -228,35 +223,39 @@
 
 </main>
 
-<footer>Cartera de Sesiones v2.0 — Traders House — datos almacenados localmente en este navegador</footer>
+<footer>Cartera de Sesiones v3.0 — Traders House — datos almacenados localmente en este navegador</footer>
 
 <script>
 (function(){
 "use strict";
 
-const STORAGE_KEY = "th_cartera_sesiones_v1";
+const STORAGE_KEY = "th_cartera_sesiones_v1"; // same key as v2: daily-close data is compatible in shape (id -> date -> value)
 const DOW_SHORT = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
 
-const EU_SLOTS = [
-  {label:"09:00–10:00"},{label:"10:00–11:00"},{label:"11:00–12:00"},{label:"12:00–13:00"},
-  {label:"13:00–14:00"},{label:"14:00–15:00"},{label:"15:00–16:00"},{label:"16:00–17:00"},
-  {label:"17:00–17:30"}
-];
-const US_SLOTS = [
-  {label:"15:30–16:00"},{label:"16:00–17:00"},{label:"17:00–18:00"},{label:"18:00–19:00"},
-  {label:"19:00–20:00"},{label:"20:00–21:00"},{label:"21:00–22:00"}
-];
-function getSlots(market){ return market==='US' ? US_SLOTS : EU_SLOTS; }
 function marketLabel(m){ return m==='US' ? 'Americano' : 'Europeo'; }
 
 let store = load();
+sanitizeStore();
+function sanitizeStore(){
+  let changed = false;
+  Object.keys(store.data||{}).forEach(instrId=>{
+    Object.keys(store.data[instrId]||{}).forEach(dateStr=>{
+      const val = store.data[instrId][dateStr];
+      if(typeof val !== 'string' || !['green','red','yellow'].includes(val)){
+        delete store.data[instrId][dateStr];
+        changed = true;
+      }
+    });
+    if(store.data[instrId] && Object.keys(store.data[instrId]).length===0) delete store.data[instrId];
+  });
+  if(changed) save();
+}
 function load(){
   try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {instruments:[], data:{}}; }
   catch(e){ return {instruments:[], data:{}}; }
 }
 function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
-
 function uid(){ return 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 
 function fmtDate(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
@@ -268,20 +267,14 @@ function getInstrument(id){ return store.instruments.find(i=>i.id===id); }
 function activeInstruments(){ return store.instruments.filter(i=>!i.archived); }
 function archivedInstruments(){ return store.instruments.filter(i=>i.archived); }
 
-function getSlotState(instrId, dateStr, slotIdx){
-  const d = store.data[instrId];
-  if(!d || !d[dateStr]) return null;
-  return d[dateStr][slotIdx] || null;
+// Daily close: store.data[instrId][dateStr] = "green"|"red"|"yellow" (or absent = sin registrar)
+function getDailyState(instrId, dateStr){
+  return (store.data[instrId] && store.data[instrId][dateStr]) || null;
 }
-function setSlotState(instrId, dateStr, slotIdx, state){
+function setDailyState(instrId, dateStr, state){
   if(!store.data[instrId]) store.data[instrId] = {};
-  if(!store.data[instrId][dateStr]) store.data[instrId][dateStr] = {};
-  if(state===null){
-    delete store.data[instrId][dateStr][slotIdx];
-    if(Object.keys(store.data[instrId][dateStr]).length===0) delete store.data[instrId][dateStr];
-  } else {
-    store.data[instrId][dateStr][slotIdx] = state;
-  }
+  if(state===null) delete store.data[instrId][dateStr];
+  else store.data[instrId][dateStr] = state;
   save();
 }
 function nextState(cur){
@@ -290,30 +283,18 @@ function nextState(cur){
   if(cur==="red") return "yellow";
   return null;
 }
-function stateLabel(s){
-  if(s==="green") return "🟩 Alcista"; if(s==="red") return "🟥 Bajista"; if(s==="yellow") return "🟨 Lateral";
-  return "⬜ Sin registrar";
+function stateWord(s){
+  if(s==="green") return "Alcista"; if(s==="red") return "Bajista"; if(s==="yellow") return "Lateral"; return "Sin registrar";
 }
 function stateEmoji(s){
   if(s==="green") return "🟩"; if(s==="red") return "🟥"; if(s==="yellow") return "🟨"; return "";
 }
 
-// dominant color among filled slots of an instrument on a date; null if no data
-function sessionTotal(instrId, dateStr){
-  const d = store.data[instrId] && store.data[instrId][dateStr];
-  if(!d) return null;
-  const counts = {green:0,red:0,yellow:0};
-  Object.values(d).forEach(s=>{ if(counts[s]!==undefined) counts[s]++; });
-  const total = counts.green+counts.red+counts.yellow;
-  if(total===0) return null;
-  return Object.keys(counts).reduce((a,b)=> counts[a]>=counts[b]?a:b);
-}
-
-// portfolio total for a date: dominant among all instruments' session totals that day
+// portfolio total for a date: dominant among all instruments' daily states that day
 function portfolioTotal(dateStr){
   const counts = {green:0,red:0,yellow:0};
   store.instruments.forEach(instr=>{
-    const t = sessionTotal(instr.id, dateStr);
+    const t = getDailyState(instr.id, dateStr);
     if(t) counts[t]++;
   });
   const total = counts.green+counts.red+counts.yellow;
@@ -351,8 +332,8 @@ document.getElementById('btn-add-instr').addEventListener('click', ()=>{
   save();
   nameInput.value = '';
   renderInstrumentos();
-  refreshInstrSelect();
-});
+  renderDay();
+}); 
 
 function renderInstrumentos(){
   const activeEl = document.getElementById('instr-list-active');
@@ -367,7 +348,7 @@ function renderInstrumentos(){
     const archiveBtn = document.createElement('button');
     archiveBtn.className = 'btn ghost';
     archiveBtn.textContent = 'Salir (archivar)';
-    archiveBtn.addEventListener('click', ()=>{ instr.archived = true; save(); renderInstrumentos(); refreshInstrSelect(); });
+    archiveBtn.addEventListener('click', ()=>{ instr.archived = true; save(); renderInstrumentos(); renderDay(); });
     row.appendChild(archiveBtn);
     activeEl.appendChild(row);
   });
@@ -380,7 +361,7 @@ function renderInstrumentos(){
     const reactBtn = document.createElement('button');
     reactBtn.className = 'btn ghost';
     reactBtn.textContent = 'Reactivar';
-    reactBtn.addEventListener('click', ()=>{ instr.archived = false; save(); renderInstrumentos(); refreshInstrSelect(); });
+    reactBtn.addEventListener('click', ()=>{ instr.archived = false; save(); renderInstrumentos(); renderDay(); });
     const delBtn = document.createElement('button');
     delBtn.className = 'btn danger ghost';
     delBtn.textContent = 'Eliminar definitivamente';
@@ -388,7 +369,7 @@ function renderInstrumentos(){
       if(confirm(`¿Eliminar "${instr.name}" y todo su histórico? Esta acción no se puede deshacer.`)){
         store.instruments = store.instruments.filter(i=>i.id!==instr.id);
         delete store.data[instr.id];
-        save(); renderInstrumentos(); refreshInstrSelect();
+        save(); renderInstrumentos(); renderDay();
       }
     });
     row.appendChild(reactBtn); row.appendChild(delBtn);
@@ -399,30 +380,8 @@ function renderInstrumentos(){
 
 // ---------- DAY VIEW ----------
 let currentDay = new Date();
-let selectedInstrId = null;
 const diaPicker = document.getElementById('dia-picker');
 diaPicker.value = fmtDate(currentDay);
-const diaSelect = document.getElementById('dia-instr-select');
-
-function refreshInstrSelect(){
-  const prev = diaSelect.value;
-  diaSelect.innerHTML = '';
-  const all = store.instruments;
-  if(all.length===0){
-    diaSelect.innerHTML = '<option value="">— añade un instrumento —</option>';
-    selectedInstrId = null;
-    return;
-  }
-  all.forEach(instr=>{
-    const opt = document.createElement('option');
-    opt.value = instr.id;
-    opt.textContent = `${instr.name} (${marketLabel(instr.market)})${instr.archived?' — archivado':''}`;
-    diaSelect.appendChild(opt);
-  });
-  if(prev && all.some(i=>i.id===prev)) diaSelect.value = prev;
-  selectedInstrId = diaSelect.value;
-}
-diaSelect.addEventListener('change', ()=>{ selectedInstrId = diaSelect.value; renderDay(); });
 
 function renderDay(){
   diaPicker.value = fmtDate(currentDay);
@@ -431,41 +390,32 @@ function renderDay(){
   const content = document.getElementById('dia-content');
   content.innerHTML = '';
 
-  if(!selectedInstrId || !getInstrument(selectedInstrId)){
-    document.getElementById('dia-subtitle').textContent = '';
+  const instrs = activeInstruments();
+  if(instrs.length===0){
     content.innerHTML = '<div class="empty-msg">Añade un instrumento en la pestaña "Instrumentos" para empezar a registrar.</div>';
     return;
   }
-  const instr = getInstrument(selectedInstrId);
-  document.getElementById('dia-subtitle').textContent = `${instr.name} · ${marketLabel(instr.market)}`;
-  const slots = getSlots(instr.market);
 
-  const grid = document.createElement('div');
-  grid.className = 'hour-grid';
-  slots.forEach((slot, idx)=>{
-    const state = getSlotState(instr.id, dateStr, idx);
-    const cell = document.createElement('div');
-    cell.className = 'hour-cell' + (state?' '+state:'');
-    cell.innerHTML = `<div class="h">${slot.label}</div><div class="state">${stateLabel(state)}</div>`;
-    cell.addEventListener('click', ()=>{
-      const cur = getSlotState(instr.id, dateStr, idx);
-      setSlotState(instr.id, dateStr, idx, nextState(cur));
+  const list = document.createElement('div');
+  list.className = 'daily-list';
+  instrs.forEach(instr=>{
+    const state = getDailyState(instr.id, dateStr);
+    const row = document.createElement('div');
+    row.className = 'daily-row' + (state?' '+state:'');
+    row.innerHTML = `<span class="name">${instr.name}</span><span class="market">${marketLabel(instr.market)}</span><span class="state-label">${stateEmoji(state)} ${stateWord(state)}</span>`;
+    row.addEventListener('click', ()=>{
+      const cur = getDailyState(instr.id, dateStr);
+      setDailyState(instr.id, dateStr, nextState(cur));
       renderDay();
     });
-    grid.appendChild(cell);
+    list.appendChild(row);
   });
-  content.appendChild(grid);
-
-  const total = sessionTotal(instr.id, dateStr);
-  const totalDiv = document.createElement('div');
-  totalDiv.className = 'session-total';
-  totalDiv.innerHTML = `<span>Total sesión ${instr.name}:</span> <span class="badge ${total||'empty'}">${total?stateEmoji(total)+' '+stateLabel(total).split(' ')[1]:'Sin registrar'}</span>`;
-  content.appendChild(totalDiv);
+  content.appendChild(list);
 
   const ptotal = portfolioTotal(dateStr);
   const pDiv = document.createElement('div');
   pDiv.className = 'session-total';
-  pDiv.innerHTML = `<span>Total cartera (todos los instrumentos) ese día:</span> <span class="badge ${ptotal||'empty'}">${ptotal?stateEmoji(ptotal)+' '+stateLabel(ptotal).split(' ')[1]:'Sin registrar'}</span>`;
+  pDiv.innerHTML = `<span>Total cartera ese día:</span> <span class="badge ${ptotal||'empty'}">${ptotal?stateEmoji(ptotal)+' '+stateWord(ptotal):'Sin registrar'}</span>`;
   content.appendChild(pDiv);
 }
 document.getElementById('dia-prev').addEventListener('click', ()=>{ currentDay.setDate(currentDay.getDate()-1); renderDay(); });
@@ -473,10 +423,8 @@ document.getElementById('dia-next').addEventListener('click', ()=>{ currentDay.s
 document.getElementById('dia-today').addEventListener('click', ()=>{ currentDay = new Date(); renderDay(); });
 diaPicker.addEventListener('change', ()=>{ currentDay = parseDate(diaPicker.value); renderDay(); });
 
-function goToDay(instrId, dateStr){
-  selectedInstrId = instrId;
+function goToDay(dateStr){
   currentDay = parseDate(dateStr);
-  diaSelect.value = instrId;
   document.querySelector('nav button[data-view="dia"]').click();
 }
 
@@ -494,8 +442,8 @@ function renderWeek(){
     html += `<tr${instr.archived?' style="opacity:0.5;"':''}><td class="name-cell">${instr.name}</td>`;
     weekDates.forEach(d=>{
       const ds = fmtDate(d);
-      const total = sessionTotal(instr.id, ds);
-      html += `<td><span class="wblock ${total||'empty'}" data-instr="${instr.id}" data-date="${ds}">${total?stateEmoji(total):'–'}</span></td>`;
+      const state = getDailyState(instr.id, ds);
+      html += `<td><span class="wblock ${state||'empty'}" data-date="${ds}">${state?stateEmoji(state):'–'}</span></td>`;
     });
     html += '</tr>';
   });
@@ -509,8 +457,8 @@ function renderWeek(){
   html += '</tr>';
 
   table.innerHTML = html;
-  table.querySelectorAll('.wblock[data-instr]').forEach(el=>{
-    el.addEventListener('click', ()=> goToDay(el.dataset.instr, el.dataset.date));
+  table.querySelectorAll('.wblock[data-date]').forEach(el=>{
+    el.addEventListener('click', ()=> goToDay(el.dataset.date));
   });
 
   renderStats('stats-semana', weekDates.map(fmtDate));
@@ -549,12 +497,7 @@ function renderMonth(){
     const cellDiv = document.createElement('div');
     cellDiv.className = 'month-day';
     cellDiv.innerHTML = `<div class="num">${d.getDate()}</div><div class="total">${total?`<span class="badge ${total}">${stateEmoji(total)}</span>`:'<span style="color:var(--muted);font-family:var(--mono);font-size:11px;">–</span>'}</div>`;
-    cellDiv.addEventListener('click', ()=>{
-      currentDay = d;
-      if(store.instruments.length>0){
-        goToDay(selectedInstrId && getInstrument(selectedInstrId) ? selectedInstrId : store.instruments[0].id, ds);
-      }
-    });
+    cellDiv.addEventListener('click', ()=> goToDay(ds));
     grid.appendChild(cellDiv);
   });
 
@@ -574,11 +517,10 @@ function renderStats(containerId, dateList){
     return;
   }
 
-  // per-instrument stats over dateList period
   const perInstr = instrs.map(instr=>{
     let g=0,r=0,y=0;
     dateList.forEach(ds=>{
-      const t = sessionTotal(instr.id, ds);
+      const t = getDailyState(instr.id, ds);
       if(t==='green') g++; else if(t==='red') r++; else if(t==='yellow') y++;
     });
     const totalDays = g+r+y;
@@ -604,7 +546,6 @@ function renderStats(containerId, dateList){
   statsGrid.appendChild(grid);
   container.appendChild(statsGrid);
 
-  // Ranking table
   const rankSection = document.createElement('section');
   rankSection.className = 'panel';
   rankSection.innerHTML = `<h2>Ranking de instrumentos</h2><div class="desc">Ordenado por % de días alcistas en este periodo.</div>`;
@@ -618,115 +559,38 @@ function renderStats(containerId, dateList){
   rankSection.innerHTML += rankHtml;
   container.appendChild(rankSection);
 
-  // Individual heatmap (selectable) + turn hours — aggregated over FULL history
+  // Heatmap: color dominante por instrumento y día de la semana, sobre todo el histórico
   const heatSection = document.createElement('section');
   heatSection.className = 'panel';
-  heatSection.innerHTML = `<h2>Mapa de calor individual</h2><div class="desc">Color dominante por hora y día de la semana, sobre todo el histórico del instrumento seleccionado.</div>`;
-  const selWrap = document.createElement('div');
-  selWrap.className = 'toolbar';
-  selWrap.style.marginBottom = '10px';
-  const sel = document.createElement('select');
-  instrs.forEach(instr=>{ const o=document.createElement('option'); o.value=instr.id; o.textContent=instr.name; sel.appendChild(o); });
-  selWrap.appendChild(sel);
-  heatSection.appendChild(selWrap);
-  const heatDiv = document.createElement('div');
-  heatDiv.style.overflowX = 'auto';
-  heatSection.appendChild(heatDiv);
-  const turnDiv = document.createElement('div');
-  turnDiv.className = 'turn-hours';
-  heatSection.appendChild(turnDiv);
-
-  function drawIndividualHeatmap(instrId){
-    const instr = getInstrument(instrId);
-    if(!instr) return;
-    const slots = getSlots(instr.market);
-    const agg = {}; slots.forEach((s,idx)=>{ agg[idx]={}; [1,2,3,4,5].forEach(dow=>{ agg[idx][dow]={green:0,red:0,yellow:0}; }); });
-    const turnCounts = {};
-    slots.forEach((s,idx)=>turnCounts[idx]=0);
-
-    const allDates = Object.keys(store.data[instrId]||{});
-    allDates.forEach(ds=>{
-      const d = parseDate(ds);
-      const dow = d.getDay();
-      const dayData = store.data[instrId][ds];
-      let prevState = null;
-      slots.forEach((slot, idx)=>{
-        const s = dayData[idx];
-        if(s && agg[idx] && agg[idx][dow]) agg[idx][dow][s]++;
-        if(s && prevState && s!==prevState) turnCounts[idx]++;
-        if(s) prevState = s;
-      });
-    });
-
-    let html = '<table class="heatmap-table"><tr><th></th>' + [1,2,3,4,5].map(d=>`<th>${DOW_SHORT[d]}</th>`).join('') + '</tr>';
-    slots.forEach((slot, idx)=>{
-      html += `<tr><td class="hm-hourlabel">${slot.label.split('–')[0]}</td>`;
-      [1,2,3,4,5].forEach(dow=>{
-        const c = agg[idx][dow];
-        const total = c.green+c.red+c.yellow;
-        if(total===0){ html += `<td><div class="heat-cell empty">–</div></td>`; }
-        else{
-          const dom = Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
-          const pct = Math.round((c[dom]/total)*100);
-          const color = dom==='green'?'var(--green)':dom==='red'?'var(--red)':'var(--yellow)';
-          html += `<td><div class="heat-cell" style="background:${color};">${pct}%</div></td>`;
-        }
-      });
-      html += '</tr>';
-    });
-    html += '</table>';
-    heatDiv.innerHTML = html;
-
-    let topSlotIdx = null, topCount = -1;
-    Object.keys(turnCounts).forEach(idx=>{ if(turnCounts[idx]>topCount){ topCount=turnCounts[idx]; topSlotIdx=idx; } });
-    if(topCount>0){
-      turnDiv.innerHTML = `Hora de giro más frecuente para <b>${instr.name}</b>: <b>${slots[topSlotIdx].label}</b> (${topCount} cambio(s) de tendencia registrados ahí).`;
-    } else {
-      turnDiv.innerHTML = `Sin suficientes datos todavía para detectar horas de giro de <b>${instr.name}</b>.`;
-    }
-  }
-  sel.addEventListener('change', ()=> drawIndividualHeatmap(sel.value));
-  if(instrs.length>0) drawIndividualHeatmap(instrs[0].id);
-  container.appendChild(heatSection);
-
-  // Portfolio-wide heatmap — aggregated over full history, all instruments combined (normalized by market slot position isn't directly comparable EU vs US, so we aggregate by clock hour instead)
-  const portSection = document.createElement('section');
-  portSection.className = 'panel';
-  portSection.innerHTML = `<h2>Mapa de calor de la cartera completa</h2><div class="desc">Combina todos los instrumentos (activos y archivados) por hora de reloj y día de la semana, sobre todo el histórico.</div>`;
-  const clockAgg = {}; // clockHour(9..21) -> dow -> counts
-  for(let h=9; h<=21; h++){ clockAgg[h]={}; [1,2,3,4,5].forEach(dow=>clockAgg[h][dow]={green:0,red:0,yellow:0}); }
-  store.instruments.forEach(instr=>{
-    const slots = getSlots(instr.market);
+  heatSection.innerHTML = `<h2>Mapa de calor por día de la semana</h2><div class="desc">% de días alcistas de cada instrumento en cada día de la semana, sobre todo el histórico guardado.</div>`;
+  const agg = {}; // instrId -> dow -> counts
+  instrs.forEach(instr=>{ agg[instr.id]={}; [1,2,3,4,5].forEach(dow=>agg[instr.id][dow]={green:0,red:0,yellow:0}); });
+  instrs.forEach(instr=>{
     const allDates = Object.keys(store.data[instr.id]||{});
     allDates.forEach(ds=>{
       const d = parseDate(ds); const dow = d.getDay();
-      const dayData = store.data[instr.id][ds];
-      slots.forEach((slot, idx)=>{
-        const s = dayData[idx];
-        if(!s) return;
-        const hourNum = parseInt(slot.label.split(':')[0].split('–')[0],10);
-        if(clockAgg[hourNum] && clockAgg[hourNum][dow]) clockAgg[hourNum][dow][s]++;
-      });
+      const s = store.data[instr.id][ds];
+      if(agg[instr.id][dow]) agg[instr.id][dow][s]++;
     });
   });
-  let portHtml = '<table class="heatmap-table"><tr><th></th>' + [1,2,3,4,5].map(d=>`<th>${DOW_SHORT[d]}</th>`).join('') + '</tr>';
-  for(let h=9; h<=21; h++){
-    portHtml += `<tr><td class="hm-hourlabel">${String(h).padStart(2,'0')}:00</td>`;
+  let heatHtml = '<div style="overflow-x:auto;"><table class="heatmap-table"><tr><th style="text-align:left;">Instrumento</th>' + [1,2,3,4,5].map(d=>`<th>${DOW_SHORT[d]}</th>`).join('') + '</tr>';
+  instrs.forEach(instr=>{
+    heatHtml += `<tr><td style="text-align:left;padding:4px 6px;font-weight:600;">${instr.name}</td>`;
     [1,2,3,4,5].forEach(dow=>{
-      const c = clockAgg[h][dow]; const total=c.green+c.red+c.yellow;
-      if(total===0){ portHtml += `<td><div class="heat-cell empty">–</div></td>`; }
+      const c = agg[instr.id][dow]; const total = c.green+c.red+c.yellow;
+      if(total===0){ heatHtml += `<td><div class="heat-cell empty">–</div></td>`; }
       else{
         const dom = Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
         const pct = Math.round((c[dom]/total)*100);
         const color = dom==='green'?'var(--green)':dom==='red'?'var(--red)':'var(--yellow)';
-        portHtml += `<td><div class="heat-cell" style="background:${color};">${pct}%</div></td>`;
+        heatHtml += `<td><div class="heat-cell" style="background:${color};">${pct}%</div></td>`;
       }
     });
-    portHtml += '</tr>';
-  }
-  portHtml += '</table>';
-  portSection.innerHTML += `<div style="overflow-x:auto;">${portHtml}</div>`;
-  container.appendChild(portSection);
+    heatHtml += '</tr>';
+  });
+  heatHtml += '</table></div>';
+  heatSection.innerHTML += heatHtml;
+  container.appendChild(heatSection);
 }
 
 // ---------- EXPORT / IMPORT ----------
@@ -756,7 +620,6 @@ document.getElementById('file-import').addEventListener('change', (e)=>{
 });
 
 function renderAll(){
-  refreshInstrSelect();
   renderInstrumentos();
   renderDay();
   renderWeek();
