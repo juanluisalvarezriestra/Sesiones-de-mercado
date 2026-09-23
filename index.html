@@ -2,634 +2,218 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cartera de Sesiones — Traders House</title>
 <link rel="manifest" href="manifest.json">
-<meta name="theme-color" content="#0b0d10">
 <link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#0c0e12">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="mobile-web-app-capable" content="yes">
 <style>
   :root{
-    --bg:#0b0d10; --panel:#14171b; --panel2:#1b1f24; --line:#2a2f36;
-    --text:#e8eaed; --muted:#8b929c; --amber:#e0a72e;
-    --green:#2fae5e; --green-dim:#1d3a2a;
-    --red:#d94f4f; --red-dim:#3a2222;
-    --yellow:#d9c24f; --yellow-dim:#3a3722;
-    --empty:#20242a;
-    --mono:'JetBrains Mono','SF Mono',Consolas,monospace;
-    --sans:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    --bg:#0c0e12; --text:#f4f1ea; --muted:#9a958b; --gold:#e0b35a; --gold2:#c4922e;
+    --green:#3dcf7a; --red:#ff6b6b; --yellow:#e8c85a; --stroke:rgba(255,255,255,.08);
+    --card:rgba(255,255,255,.045); --sans:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+    --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+    --green-bg:linear-gradient(180deg,#163425,#10261c);
+    --red-bg:linear-gradient(180deg,#3a1c1c,#261414);
+    --yellow-bg:linear-gradient(180deg,#3a3216,#261f10);
   }
-  *{box-sizing:border-box;}
-  body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);-webkit-font-smoothing:antialiased;}
-  header{padding:16px 18px 12px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;background:linear-gradient(180deg,#0f1216,#0b0d10);}
-  h1{font-size:17px;font-weight:600;margin:0;}
-  .sub{font-family:var(--mono);font-size:11px;color:var(--muted);margin-top:2px;}
-  nav{display:flex;gap:5px;background:var(--panel);padding:4px;border-radius:8px;border:1px solid var(--line);flex-wrap:wrap;}
-  nav button{background:transparent;border:none;color:var(--muted);padding:7px 12px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:var(--sans);}
-  nav button.active{background:var(--panel2);color:var(--text);box-shadow:inset 0 0 0 1px var(--line);}
-  main{padding:16px;max-width:1000px;margin:0 auto;}
-  .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;}
-  select,.toolbar input[type=date],.toolbar input[type=text]{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:8px 10px;border-radius:6px;font-family:var(--sans);font-size:13px;}
-  .btn{background:var(--panel);border:1px solid var(--line);color:var(--text);padding:8px 12px;border-radius:6px;font-size:12px;cursor:pointer;font-weight:600;}
-  .btn:hover{border-color:var(--amber);}
-  .btn.ghost{color:var(--muted);font-weight:500;}
-  .btn.primary{background:var(--amber);color:#0b0d10;border-color:var(--amber);}
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+  html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--sans);}
+  body{min-height:100dvh;background:radial-gradient(1200px 500px at 10% -10%,rgba(224,179,90,.12),transparent 50%),var(--bg);}
+  header{position:sticky;top:0;z-index:20;padding:calc(14px + env(safe-area-inset-top)) 18px 12px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;background:rgba(12,14,18,.78);backdrop-filter:blur(18px);border-bottom:1px solid var(--stroke);}
+  .brand{display:flex;align-items:center;gap:12px;}
+  .brand img{width:36px;height:36px;border-radius:10px;}
+  h1{font-size:18px;margin:0;}
+  .sub{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:2px;}
+  nav{display:flex;gap:4px;background:rgba(255,255,255,.04);padding:4px;border-radius:14px;border:1px solid var(--stroke);}
+  nav button{border:0;background:transparent;color:var(--muted);padding:9px 14px;border-radius:11px;font-weight:650;font-size:13px;}
+  nav button.active{background:var(--text);color:#111;}
+  main{padding:18px 16px 40px;max-width:980px;margin:0 auto;}
+  .toolbar{display:flex;align-items:center;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
+  input{background:rgba(255,255,255,.05);border:1px solid var(--stroke);color:var(--text);padding:10px 12px;border-radius:12px;font-size:15px;}
+  .btn{background:rgba(255,255,255,.05);border:1px solid var(--stroke);color:var(--text);padding:10px 14px;border-radius:12px;font-size:13px;font-weight:650;}
+  .btn.primary{background:linear-gradient(180deg,var(--gold),var(--gold2));color:#1a1408;border-color:transparent;}
+  .btn.ghost{color:var(--muted);background:transparent;}
   .btn.danger{color:var(--red);}
-  .spacer{flex:1;}
-  .legend{display:flex;gap:12px;font-size:11px;color:var(--muted);align-items:center;flex-wrap:wrap;}
-  .legend span{display:flex;align-items:center;gap:4px;}
-  .dot{width:9px;height:9px;border-radius:2px;display:inline-block;}
-  .dot.g{background:var(--green);} .dot.r{background:var(--red);} .dot.y{background:var(--yellow);} .dot.e{background:var(--empty);border:1px solid var(--line);}
-
-  section.panel{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;margin-top:16px;}
-  section.panel h2{font-size:14px;margin:0 0 4px;}
-  section.panel .desc{font-size:11px;color:var(--muted);margin-bottom:12px;}
-
-  /* INSTRUMENTOS */
-  .instr-form{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;}
-  .instr-list{display:flex;flex-direction:column;gap:6px;}
-  .instr-row{display:flex;align-items:center;gap:10px;padding:10px 12px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;flex-wrap:wrap;}
-  .instr-row .name{font-weight:600;font-size:13px;min-width:80px;}
-  .instr-row .market{font-family:var(--mono);font-size:10px;color:var(--muted);padding:2px 6px;border:1px solid var(--line);border-radius:4px;}
-  .instr-row.archived{opacity:0.5;}
-  .instr-row .spacer{flex:1;}
-
-  /* DAY VIEW — one tap per instrument */
-  .day-title{font-family:var(--mono);font-size:13px;color:var(--amber);margin-bottom:12px;text-transform:capitalize;}
-  .daily-list{display:flex;flex-direction:column;gap:8px;}
-  .daily-row{display:flex;align-items:center;gap:12px;padding:14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:10px;cursor:pointer;user-select:none;}
-  .daily-row:hover{border-color:var(--amber);}
-  .daily-row .name{font-weight:700;font-size:15px;flex:1;}
-  .daily-row .market{font-family:var(--mono);font-size:10px;color:var(--muted);padding:2px 6px;border:1px solid var(--line);border-radius:4px;}
-  .daily-row .state-label{font-size:13px;font-weight:600;color:var(--muted);}
-  .daily-row.green{background:var(--green-dim);border-color:var(--green);}
-  .daily-row.red{background:var(--red-dim);border-color:var(--red);}
-  .daily-row.yellow{background:var(--yellow-dim);border-color:var(--yellow);}
-  .daily-row.green .state-label{color:var(--green);}
-  .daily-row.red .state-label{color:var(--red);}
-  .daily-row.yellow .state-label{color:var(--yellow);}
-
-  .session-total{margin-top:14px;padding:12px 14px;background:var(--panel2);border:1px solid var(--line);border-radius:8px;font-size:13px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-  .badge{padding:3px 9px;border-radius:20px;font-size:11px;font-weight:700;font-family:var(--mono);}
-  .badge.green{background:var(--green);color:#0b0d10;}
-  .badge.red{background:var(--red);color:#0b0d10;}
-  .badge.yellow{background:var(--yellow);color:#0b0d10;}
-  .badge.empty{background:var(--empty);color:var(--muted);}
-
-  /* WEEK TABLE */
-  .week-table{width:100%;border-collapse:collapse;font-size:12px;}
-  .week-table th{padding:8px 6px;color:var(--muted);font-weight:600;text-align:center;border-bottom:1px solid var(--line);font-family:var(--mono);}
-  .week-table td{padding:4px;text-align:center;border:1px solid var(--line);}
-  .week-table td.name-cell{text-align:left;font-weight:600;font-size:12px;padding-left:10px;}
-  .week-table tr.portfolio-row td{background:#181c22;font-weight:700;}
-  .wblock{display:inline-flex;align-items:center;justify-content:center;width:100%;height:32px;border-radius:5px;cursor:pointer;font-family:var(--mono);font-size:11px;color:#0b0d10;font-weight:700;}
-  .wblock.green{background:var(--green);} .wblock.red{background:var(--red);} .wblock.yellow{background:var(--yellow);}
-  .wblock.empty{background:var(--empty);color:var(--muted);font-weight:400;}
-
-  /* MONTH VIEW */
+  .legend{display:flex;gap:12px;font-size:12px;color:var(--muted);flex-wrap:wrap;}
+  .dot{width:8px;height:8px;border-radius:99px;display:inline-block;margin-right:4px;}
+  .dot.g{background:var(--green);} .dot.r{background:var(--red);} .dot.y{background:var(--yellow);}
+  .panel{background:var(--card);border:1px solid var(--stroke);border-radius:18px;padding:16px;margin-top:16px;}
+  .panel h2{margin:0 0 6px;font-size:15px;}
+  .desc{color:var(--muted);font-size:13px;line-height:1.45;margin:0 0 12px;}
+  .day-title{font-size:15px;color:var(--gold);margin:0 0 14px;text-transform:capitalize;font-weight:650;}
+  .daily-list{display:flex;flex-direction:column;gap:10px;}
+  .daily-row{display:flex;align-items:center;gap:12px;padding:16px;border-radius:16px;background:var(--card);border:1px solid var(--stroke);}
+  .daily-row .name{font-weight:750;font-size:16px;flex:1;}
+  .ticker{font-family:var(--mono);font-size:11px;color:var(--muted);padding:3px 7px;border:1px solid var(--stroke);border-radius:8px;}
+  .chg,.state{font-weight:700;font-size:13px;color:var(--muted);}
+  .chg{font-family:var(--mono);font-weight:600;}
+  .daily-row.green{background:var(--green-bg);border-color:rgba(61,207,122,.35);}
+  .daily-row.red{background:var(--red-bg);border-color:rgba(255,107,107,.35);}
+  .daily-row.yellow{background:var(--yellow-bg);border-color:rgba(232,200,90,.35);}
+  .daily-row.green .state,.daily-row.green .chg{color:var(--green);}
+  .daily-row.red .state,.daily-row.red .chg{color:var(--red);}
+  .daily-row.yellow .state,.daily-row.yellow .chg{color:var(--yellow);}
+  .total{margin-top:14px;padding:14px 16px;border-radius:16px;border:1px solid var(--stroke);background:rgba(255,255,255,.06);display:flex;gap:10px;flex-wrap:wrap;align-items:center;}
+  .badge{padding:4px 10px;border-radius:999px;font-size:12px;font-weight:800;}
+  .badge.green{background:var(--green);color:#06210f;}
+  .badge.red{background:var(--red);color:#2a0707;}
+  .badge.yellow{background:var(--yellow);color:#2a2106;}
+  .badge.empty{background:#2a2f36;color:var(--muted);}
+  .week-days{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;}
+  .week-card{border-radius:18px;padding:16px 12px;min-height:124px;background:var(--card);border:1px solid var(--stroke);cursor:pointer;}
+  .week-card.green{background:var(--green-bg);} .week-card.red{background:var(--red-bg);} .week-card.yellow{background:var(--yellow-bg);}
+  .week-card .wd{font-size:11px;color:var(--muted);text-transform:uppercase;}
+  .week-card .big{font-size:20px;font-weight:800;margin:8px 0;}
+  .week-card .cnt{font-family:var(--mono);font-size:11px;color:var(--muted);}
   .month-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;}
-  .month-day{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:10px;min-height:60px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;}
-  .month-day:hover{border-color:var(--amber);}
-  .month-day .num{font-family:var(--mono);font-size:11px;color:var(--muted);}
-  .month-day .total{margin-top:6px;}
-  .weekday-hdr{font-family:var(--mono);font-size:11px;color:var(--muted);text-transform:uppercase;text-align:center;padding-bottom:4px;}
-
-  /* STATS PANEL */
-  .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:16px;}
-  .stat-card{background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:14px;}
-  .stat-card .lbl{font-size:11px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:0.5px;}
-  .stat-card .val{font-size:18px;font-weight:700;font-family:var(--mono);}
-  .stat-card .val.green{color:var(--green);} .stat-card .val.red{color:var(--red);}
-
-  .rank-table{width:100%;border-collapse:collapse;font-size:12px;font-family:var(--mono);}
-  .rank-table th{text-align:left;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line);font-family:var(--sans);font-weight:600;font-size:11px;text-transform:uppercase;}
-  .rank-table td{padding:7px 8px;border-bottom:1px solid var(--line);}
-  .rank-table td.pct-green{color:var(--green);font-weight:700;}
-  .rank-table td.pct-red{color:var(--red);font-weight:700;}
-
-  .heatmap-table{border-collapse:collapse;font-family:var(--mono);font-size:11px;width:100%;}
-  .heatmap-table th{color:var(--muted);padding:4px 6px;text-transform:capitalize;font-weight:600;}
-  .heatmap-table td{text-align:center;padding:0;}
-  .heat-cell{width:100%;height:34px;display:flex;align-items:center;justify-content:center;color:#0b0d10;font-weight:700;border-radius:2px;}
-  .heat-cell.empty{color:var(--muted);background:var(--empty);font-weight:400;}
-
-  footer{text-align:center;padding:20px;color:var(--muted);font-size:11px;font-family:var(--mono);}
+  .month-day{background:var(--card);border:1px solid var(--stroke);border-radius:14px;padding:12px;min-height:78px;cursor:pointer;display:flex;flex-direction:column;justify-content:space-between;}
+  .month-day.green{background:var(--green-bg);} .month-day.red{background:var(--red-bg);} .month-day.yellow{background:var(--yellow-bg);}
+  .num,.hdr,.status{font-size:12px;color:var(--muted);}
+  .hdr{text-align:center;text-transform:uppercase;}
+  .instr-row{display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:14px;background:var(--card);border:1px solid var(--stroke);margin-bottom:8px;flex-wrap:wrap;}
+  .instr-row .name{font-weight:700;flex:1;}
+  .empty{color:var(--muted);text-align:center;padding:28px 8px;}
+  .results button,.searchbox + #search-res button{width:100%;text-align:left;background:var(--card);border:1px solid var(--stroke);color:var(--text);border-radius:14px;padding:12px;margin-bottom:8px;}
+  footer{text-align:center;color:var(--muted);font-size:11px;padding:8px 16px 28px;}
   .hidden{display:none !important;}
   input[type=file]{display:none;}
-  .empty-msg{color:var(--muted);font-family:var(--mono);font-size:13px;padding:20px 0;text-align:center;}
-
-  @media (max-width:640px){
-    .month-grid{grid-template-columns:repeat(5,1fr);gap:4px;}
-    .month-day{padding:5px;min-height:44px;}
-  }
+  .searchbox{display:flex;gap:8px;flex-wrap:wrap;}
 </style>
 </head>
 <body>
-
 <header>
-  <div>
-    <h1>Cartera de Sesiones</h1>
-    <div class="sub">TRADERS HOUSE · cierre diario por instrumento</div>
+  <div class="brand">
+    <img src="icon-192.png" alt="TH">
+    <div><h1>Cartera de Sesiones</h1><div class="sub">Traders House · v4 auto</div></div>
   </div>
   <nav>
     <button class="active" data-view="dia">Día</button>
     <button data-view="semana">Semana</button>
     <button data-view="mes">Mes</button>
-    <button data-view="instrumentos">Instrumentos</button>
+    <button data-view="instrumentos">Valores</button>
   </nav>
 </header>
-
 <main>
-
-  <!-- INSTRUMENTOS -->
   <div id="view-instrumentos" class="hidden">
-    <section class="panel">
-      <h2>Añadir instrumento</h2>
-      <div class="instr-form">
-        <input type="text" id="new-instr-name" placeholder="Nombre (ej. STM)" style="min-width:160px;">
-        <select id="new-instr-market">
-          <option value="EU">Europeo</option>
-          <option value="US">Americano</option>
-        </select>
-        <button class="btn primary" id="btn-add-instr">Añadir</button>
+    <div class="panel">
+      <h2>Añadir lo que tengas ahora</h2>
+      <p class="desc">Busca el nombre o el ticker. Si sales de un valor, lo quitas y deja de contar.</p>
+      <div class="searchbox">
+        <input id="q" placeholder="Vertiv, ASML, Xylem, RKLB…" style="flex:1;min-width:200px;">
+        <button class="btn primary" id="btn-search">Buscar</button>
       </div>
-    </section>
-    <section class="panel">
-      <h2>Cartera activa</h2>
-      <div class="instr-list" id="instr-list-active"></div>
-    </section>
-    <section class="panel">
-      <h2>Archivados</h2>
-      <div class="desc">Instrumentos de los que has salido. Conservan su histórico para las estadísticas.</div>
-      <div class="instr-list" id="instr-list-archived"></div>
-    </section>
+      <div id="search-res"></div>
+    </div>
+    <div class="panel"><h2>En cartera</h2><div id="instr-list"></div></div>
   </div>
-
-  <!-- DAY VIEW -->
   <div id="view-dia">
     <div class="toolbar">
-      <button class="btn" id="dia-prev">← Día</button>
+      <button class="btn" id="dia-prev">←</button>
       <input type="date" id="dia-picker">
-      <button class="btn" id="dia-next">Día →</button>
+      <button class="btn" id="dia-next">→</button>
       <button class="btn ghost" id="dia-today">Hoy</button>
-      <div class="spacer"></div>
-      <div class="legend">
-        <span><i class="dot g"></i>Alcista</span>
-        <span><i class="dot r"></i>Bajista</span>
-        <span><i class="dot y"></i>Lateral</span>
-        <span><i class="dot e"></i>Sin registrar</span>
-      </div>
+      <button class="btn primary" id="btn-refresh">Actualizar</button>
+      <div class="legend"><span><i class="dot g"></i>Verde</span><span><i class="dot r"></i>Rojo</span><span><i class="dot y"></i>Lateral</span></div>
     </div>
     <div class="day-title" id="dia-title"></div>
     <div id="dia-content"></div>
   </div>
-
-  <!-- WEEK VIEW -->
   <div id="view-semana" class="hidden">
     <div class="toolbar">
-      <button class="btn" id="sem-prev">← Semana</button>
-      <span id="sem-range" style="font-family:var(--mono);font-size:13px;"></span>
-      <button class="btn" id="sem-next">Semana →</button>
+      <button class="btn" id="sem-prev">←</button>
+      <span id="sem-range" style="font-weight:700;"></span>
+      <button class="btn" id="sem-next">→</button>
       <button class="btn ghost" id="sem-today">Esta semana</button>
+      <button class="btn primary" id="btn-refresh-w">Actualizar</button>
     </div>
-    <div style="overflow-x:auto;"><table class="week-table" id="sem-table"></table></div>
-    <div id="stats-semana"></div>
+    <p class="desc">Un color por día. Gana la mayoría. 7 verdes y 3 rojos = día verde.</p>
+    <div class="week-days" id="sem-grid"></div>
   </div>
-
-  <!-- MONTH VIEW -->
   <div id="view-mes" class="hidden">
     <div class="toolbar">
-      <button class="btn" id="mes-prev">← Mes</button>
-      <span id="mes-label" style="font-family:var(--mono);font-size:13px;text-transform:capitalize;"></span>
-      <button class="btn" id="mes-next">Mes →</button>
+      <button class="btn" id="mes-prev">←</button>
+      <span id="mes-label" style="font-weight:700;text-transform:capitalize;"></span>
+      <button class="btn" id="mes-next">→</button>
       <button class="btn ghost" id="mes-today">Este mes</button>
+      <button class="btn primary" id="btn-refresh-m">Actualizar</button>
     </div>
+    <p class="desc">Cada casilla es la mayoría de tu cartera ese día laborable.</p>
     <div class="month-grid" id="mes-hdr"></div>
-    <div class="month-grid" id="mes-grid" style="margin-top:6px;"></div>
-    <div id="stats-mes"></div>
+    <div class="month-grid" id="mes-grid" style="margin-top:8px;"></div>
   </div>
-
-  <section class="panel">
-    <h2>Copia de seguridad</h2>
-    <div class="desc">Los datos se guardan automáticamente en este navegador.</div>
-    <div class="toolbar" style="margin-bottom:0;">
-      <button class="btn" id="btn-export">Exportar JSON</button>
-      <button class="btn" id="btn-import">Importar JSON</button>
+  <div class="panel">
+    <h2>Ajustes</h2>
+    <p class="desc">Amarillo si se mueve menos que el umbral contra el cierre de ayer.</p>
+    <div class="toolbar">
+      <label class="legend">Umbral <input type="number" id="threshold" value="0.40" min="0.05" max="3" step="0.05" style="width:76px;"> %</label>
+      <button class="btn" id="btn-export">Exportar</button>
+      <button class="btn" id="btn-import">Importar</button>
       <input type="file" id="file-import" accept="application/json">
     </div>
-  </section>
-
+    <div class="status" id="status"></div>
+  </div>
 </main>
-
-<footer>Cartera de Sesiones v3.0 — Traders House — datos almacenados localmente en este navegador</footer>
-
+<footer>Cartera de Sesiones v4.0 — Traders House — el mercado pinta solo</footer>
 <script>
 (function(){
 "use strict";
-
-const STORAGE_KEY = "th_cartera_sesiones_v1"; // same key as v2: daily-close data is compatible in shape (id -> date -> value)
-const DOW_SHORT = ["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
-const MONTH_NAMES = ["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-
-function marketLabel(m){ return m==='US' ? 'Americano' : 'Europeo'; }
-
-let store = load();
-sanitizeStore();
-function sanitizeStore(){
-  let changed = false;
-  Object.keys(store.data||{}).forEach(instrId=>{
-    Object.keys(store.data[instrId]||{}).forEach(dateStr=>{
-      const val = store.data[instrId][dateStr];
-      if(typeof val !== 'string' || !['green','red','yellow'].includes(val)){
-        delete store.data[instrId][dateStr];
-        changed = true;
-      }
-    });
-    if(store.data[instrId] && Object.keys(store.data[instrId]).length===0) delete store.data[instrId];
-  });
-  if(changed) save();
-}
-function load(){
-  try{ const raw = localStorage.getItem(STORAGE_KEY); return raw ? JSON.parse(raw) : {instruments:[], data:{}}; }
-  catch(e){ return {instruments:[], data:{}}; }
-}
-function save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(store)); }
-function uid(){ return 'i' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-
-function fmtDate(d){ const y=d.getFullYear(),m=String(d.getMonth()+1).padStart(2,'0'),day=String(d.getDate()).padStart(2,'0'); return `${y}-${m}-${day}`; }
-function parseDate(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
-function isWeekend(d){ const dow=d.getDay(); return dow===0||dow===6; }
-function mondayOf(d){ const nd=new Date(d); const dow=nd.getDay(); const diff=(dow===0?-6:1-dow); nd.setDate(nd.getDate()+diff); nd.setHours(0,0,0,0); return nd; }
-
-function getInstrument(id){ return store.instruments.find(i=>i.id===id); }
-function activeInstruments(){ return store.instruments.filter(i=>!i.archived); }
-function archivedInstruments(){ return store.instruments.filter(i=>i.archived); }
-
-// Daily close: store.data[instrId][dateStr] = "green"|"red"|"yellow" (or absent = sin registrar)
-function getDailyState(instrId, dateStr){
-  return (store.data[instrId] && store.data[instrId][dateStr]) || null;
-}
-function setDailyState(instrId, dateStr, state){
-  if(!store.data[instrId]) store.data[instrId] = {};
-  if(state===null) delete store.data[instrId][dateStr];
-  else store.data[instrId][dateStr] = state;
-  save();
-}
-function nextState(cur){
-  if(cur===null) return "green";
-  if(cur==="green") return "red";
-  if(cur==="red") return "yellow";
-  return null;
-}
-function stateWord(s){
-  if(s==="green") return "Alcista"; if(s==="red") return "Bajista"; if(s==="yellow") return "Lateral"; return "Sin registrar";
-}
-function stateEmoji(s){
-  if(s==="green") return "🟩"; if(s==="red") return "🟥"; if(s==="yellow") return "🟨"; return "";
-}
-
-// portfolio total for a date: dominant among all instruments' daily states that day
-function portfolioTotal(dateStr){
-  const counts = {green:0,red:0,yellow:0};
-  store.instruments.forEach(instr=>{
-    const t = getDailyState(instr.id, dateStr);
-    if(t) counts[t]++;
-  });
-  const total = counts.green+counts.red+counts.yellow;
-  if(total===0) return null;
-  return Object.keys(counts).reduce((a,b)=> counts[a]>=counts[b]?a:b);
-}
-
-// ---------- VIEW SWITCHING ----------
-const views = {
-  dia: document.getElementById('view-dia'),
-  semana: document.getElementById('view-semana'),
-  mes: document.getElementById('view-mes'),
-  instrumentos: document.getElementById('view-instrumentos')
-};
-document.querySelectorAll('nav button').forEach(btn=>{
-  btn.addEventListener('click', ()=>{
-    document.querySelectorAll('nav button').forEach(b=>b.classList.remove('active'));
-    btn.classList.add('active');
-    Object.values(views).forEach(v=>v.classList.add('hidden'));
-    views[btn.dataset.view].classList.remove('hidden');
-    if(btn.dataset.view==='dia') renderDay();
-    if(btn.dataset.view==='semana') renderWeek();
-    if(btn.dataset.view==='mes') renderMonth();
-    if(btn.dataset.view==='instrumentos') renderInstrumentos();
-  });
-});
-
-// ---------- INSTRUMENTOS ----------
-document.getElementById('btn-add-instr').addEventListener('click', ()=>{
-  const nameInput = document.getElementById('new-instr-name');
-  const name = nameInput.value.trim();
-  if(!name){ alert('Escribe un nombre.'); return; }
-  const market = document.getElementById('new-instr-market').value;
-  store.instruments.push({id:uid(), name, market, archived:false, createdAt:fmtDate(new Date())});
-  save();
-  nameInput.value = '';
-  renderInstrumentos();
-  renderDay();
-}); 
-
-function renderInstrumentos(){
-  const activeEl = document.getElementById('instr-list-active');
-  const archivedEl = document.getElementById('instr-list-archived');
-  activeEl.innerHTML = '';
-  archivedEl.innerHTML = '';
-
-  activeInstruments().forEach(instr=>{
-    const row = document.createElement('div');
-    row.className = 'instr-row';
-    row.innerHTML = `<span class="name">${instr.name}</span><span class="market">${marketLabel(instr.market)}</span><span class="spacer"></span>`;
-    const archiveBtn = document.createElement('button');
-    archiveBtn.className = 'btn ghost';
-    archiveBtn.textContent = 'Salir (archivar)';
-    archiveBtn.addEventListener('click', ()=>{ instr.archived = true; save(); renderInstrumentos(); renderDay(); });
-    row.appendChild(archiveBtn);
-    activeEl.appendChild(row);
-  });
-  if(activeInstruments().length===0) activeEl.innerHTML = '<div class="empty-msg">Sin instrumentos activos. Añade el primero arriba.</div>';
-
-  archivedInstruments().forEach(instr=>{
-    const row = document.createElement('div');
-    row.className = 'instr-row archived';
-    row.innerHTML = `<span class="name">${instr.name}</span><span class="market">${marketLabel(instr.market)}</span><span class="spacer"></span>`;
-    const reactBtn = document.createElement('button');
-    reactBtn.className = 'btn ghost';
-    reactBtn.textContent = 'Reactivar';
-    reactBtn.addEventListener('click', ()=>{ instr.archived = false; save(); renderInstrumentos(); renderDay(); });
-    const delBtn = document.createElement('button');
-    delBtn.className = 'btn danger ghost';
-    delBtn.textContent = 'Eliminar definitivamente';
-    delBtn.addEventListener('click', ()=>{
-      if(confirm(`¿Eliminar "${instr.name}" y todo su histórico? Esta acción no se puede deshacer.`)){
-        store.instruments = store.instruments.filter(i=>i.id!==instr.id);
-        delete store.data[instr.id];
-        save(); renderInstrumentos(); renderDay();
-      }
-    });
-    row.appendChild(reactBtn); row.appendChild(delBtn);
-    archivedEl.appendChild(row);
-  });
-  if(archivedInstruments().length===0) archivedEl.innerHTML = '<div class="empty-msg">No hay instrumentos archivados.</div>';
-}
-
-// ---------- DAY VIEW ----------
-let currentDay = new Date();
-const diaPicker = document.getElementById('dia-picker');
-diaPicker.value = fmtDate(currentDay);
-
-function renderDay(){
-  diaPicker.value = fmtDate(currentDay);
-  const dateStr = fmtDate(currentDay);
-  document.getElementById('dia-title').textContent = currentDay.toLocaleDateString('es-ES',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
-  const content = document.getElementById('dia-content');
-  content.innerHTML = '';
-
-  const instrs = activeInstruments();
-  if(instrs.length===0){
-    content.innerHTML = '<div class="empty-msg">Añade un instrumento en la pestaña "Instrumentos" para empezar a registrar.</div>';
-    return;
-  }
-
-  const list = document.createElement('div');
-  list.className = 'daily-list';
-  instrs.forEach(instr=>{
-    const state = getDailyState(instr.id, dateStr);
-    const row = document.createElement('div');
-    row.className = 'daily-row' + (state?' '+state:'');
-    row.innerHTML = `<span class="name">${instr.name}</span><span class="market">${marketLabel(instr.market)}</span><span class="state-label">${stateEmoji(state)} ${stateWord(state)}</span>`;
-    row.addEventListener('click', ()=>{
-      const cur = getDailyState(instr.id, dateStr);
-      setDailyState(instr.id, dateStr, nextState(cur));
-      renderDay();
-    });
-    list.appendChild(row);
-  });
-  content.appendChild(list);
-
-  const ptotal = portfolioTotal(dateStr);
-  const pDiv = document.createElement('div');
-  pDiv.className = 'session-total';
-  pDiv.innerHTML = `<span>Total cartera ese día:</span> <span class="badge ${ptotal||'empty'}">${ptotal?stateEmoji(ptotal)+' '+stateWord(ptotal):'Sin registrar'}</span>`;
-  content.appendChild(pDiv);
-}
-document.getElementById('dia-prev').addEventListener('click', ()=>{ currentDay.setDate(currentDay.getDate()-1); renderDay(); });
-document.getElementById('dia-next').addEventListener('click', ()=>{ currentDay.setDate(currentDay.getDate()+1); renderDay(); });
-document.getElementById('dia-today').addEventListener('click', ()=>{ currentDay = new Date(); renderDay(); });
-diaPicker.addEventListener('change', ()=>{ currentDay = parseDate(diaPicker.value); renderDay(); });
-
-function goToDay(dateStr){
-  currentDay = parseDate(dateStr);
-  document.querySelector('nav button[data-view="dia"]').click();
-}
-
-// ---------- WEEK VIEW ----------
-let currentWeekMonday = mondayOf(new Date());
-function renderWeek(){
-  const weekDates = Array.from({length:5},(_,i)=>{ const d=new Date(currentWeekMonday); d.setDate(d.getDate()+i); return d; });
-  document.getElementById('sem-range').textContent = `${currentWeekMonday.toLocaleDateString('es-ES',{day:'numeric',month:'short'})} – ${weekDates[4].toLocaleDateString('es-ES',{day:'numeric',month:'short',year:'numeric'})}`;
-
-  const table = document.getElementById('sem-table');
-  const instrs = store.instruments;
-  let html = '<tr><th style="text-align:left;padding-left:10px;">Instrumento</th>' + weekDates.map(d=>`<th>${DOW_SHORT[d.getDay()]}<br>${d.getDate()}</th>`).join('') + '</tr>';
-
-  instrs.forEach(instr=>{
-    html += `<tr${instr.archived?' style="opacity:0.5;"':''}><td class="name-cell">${instr.name}</td>`;
-    weekDates.forEach(d=>{
-      const ds = fmtDate(d);
-      const state = getDailyState(instr.id, ds);
-      html += `<td><span class="wblock ${state||'empty'}" data-date="${ds}">${state?stateEmoji(state):'–'}</span></td>`;
-    });
-    html += '</tr>';
-  });
-
-  html += '<tr class="portfolio-row"><td class="name-cell">Cartera (total)</td>';
-  weekDates.forEach(d=>{
-    const ds = fmtDate(d);
-    const total = portfolioTotal(ds);
-    html += `<td><span class="wblock ${total||'empty'}">${total?stateEmoji(total):'–'}</span></td>`;
-  });
-  html += '</tr>';
-
-  table.innerHTML = html;
-  table.querySelectorAll('.wblock[data-date]').forEach(el=>{
-    el.addEventListener('click', ()=> goToDay(el.dataset.date));
-  });
-
-  renderStats('stats-semana', weekDates.map(fmtDate));
-}
-document.getElementById('sem-prev').addEventListener('click', ()=>{ currentWeekMonday.setDate(currentWeekMonday.getDate()-7); renderWeek(); });
-document.getElementById('sem-next').addEventListener('click', ()=>{ currentWeekMonday.setDate(currentWeekMonday.getDate()+7); renderWeek(); });
-document.getElementById('sem-today').addEventListener('click', ()=>{ currentWeekMonday = mondayOf(new Date()); renderWeek(); });
-
-// ---------- MONTH VIEW ----------
-let currentMonth = new Date();
-function renderMonth(){
-  const y = currentMonth.getFullYear(), m = currentMonth.getMonth();
-  document.getElementById('mes-label').textContent = `${MONTH_NAMES[m]} ${y}`;
-  const hdr = document.getElementById('mes-hdr');
-  hdr.innerHTML = DOW_SHORT.slice(1,6).map(l=>`<div class="weekday-hdr">${l}</div>`).join('');
-
-  const grid = document.getElementById('mes-grid');
-  grid.innerHTML = '';
-  const daysInMonth = new Date(y,m+1,0).getDate();
-  let cells = [];
-  for(let day=1; day<=daysInMonth; day++){
-    const d = new Date(y,m,day);
-    if(isWeekend(d)) continue;
-    cells.push(d);
-  }
-  if(cells.length>0){
-    const dow = cells[0].getDay();
-    const colIndex = dow-1;
-    for(let i=0;i<colIndex;i++){ grid.appendChild(document.createElement('div')); }
-  }
-  const monthDates = [];
-  cells.forEach(d=>{
-    const ds = fmtDate(d);
-    monthDates.push(ds);
-    const total = portfolioTotal(ds);
-    const cellDiv = document.createElement('div');
-    cellDiv.className = 'month-day';
-    cellDiv.innerHTML = `<div class="num">${d.getDate()}</div><div class="total">${total?`<span class="badge ${total}">${stateEmoji(total)}</span>`:'<span style="color:var(--muted);font-family:var(--mono);font-size:11px;">–</span>'}</div>`;
-    cellDiv.addEventListener('click', ()=> goToDay(ds));
-    grid.appendChild(cellDiv);
-  });
-
-  renderStats('stats-mes', monthDates);
-}
-document.getElementById('mes-prev').addEventListener('click', ()=>{ currentMonth.setMonth(currentMonth.getMonth()-1); renderMonth(); });
-document.getElementById('mes-next').addEventListener('click', ()=>{ currentMonth.setMonth(currentMonth.getMonth()+1); renderMonth(); });
-document.getElementById('mes-today').addEventListener('click', ()=>{ currentMonth = new Date(); renderMonth(); });
-
-// ---------- STATS PANEL (shared by week & month) ----------
-function renderStats(containerId, dateList){
-  const container = document.getElementById(containerId);
-  container.innerHTML = '';
-  const instrs = activeInstruments();
-  if(instrs.length===0){
-    container.innerHTML = '<section class="panel"><div class="empty-msg">Añade instrumentos para ver estadísticas.</div></section>';
-    return;
-  }
-
-  const perInstr = instrs.map(instr=>{
-    let g=0,r=0,y=0;
-    dateList.forEach(ds=>{
-      const t = getDailyState(instr.id, ds);
-      if(t==='green') g++; else if(t==='red') r++; else if(t==='yellow') y++;
-    });
-    const totalDays = g+r+y;
-    return {instr, g, r, y, totalDays, pctGreen: totalDays?Math.round(g/totalDays*100):null, pctRed: totalDays?Math.round(r/totalDays*100):null, pctYellow: totalDays?Math.round(y/totalDays*100):null};
-  }).filter(s=>s.totalDays>0);
-
-  let best=null, worst=null;
-  perInstr.forEach(s=>{
-    if(best===null || s.pctGreen>best.pctGreen) best=s;
-    if(worst===null || s.pctGreen<worst.pctGreen) worst=s;
-  });
-
-  const statsGrid = document.createElement('section');
-  statsGrid.className = 'panel';
-  statsGrid.innerHTML = `<h2>Resumen del periodo</h2><div class="desc">Calculado sobre los días con datos en este periodo.</div>`;
-  const grid = document.createElement('div');
-  grid.className = 'stats-grid';
-  grid.innerHTML = `
-    <div class="stat-card"><div class="lbl">Mejor comportamiento</div><div class="val green">${best?best.instr.name+' · '+best.pctGreen+'% verde':'—'}</div></div>
-    <div class="stat-card"><div class="lbl">Peor comportamiento</div><div class="val red">${worst?worst.instr.name+' · '+worst.pctRed+'% rojo':'—'}</div></div>
-    <div class="stat-card"><div class="lbl">Instrumentos con datos</div><div class="val">${perInstr.length} / ${instrs.length}</div></div>
-  `;
-  statsGrid.appendChild(grid);
-  container.appendChild(statsGrid);
-
-  const rankSection = document.createElement('section');
-  rankSection.className = 'panel';
-  rankSection.innerHTML = `<h2>Ranking de instrumentos</h2><div class="desc">Ordenado por % de días alcistas en este periodo.</div>`;
-  const sorted = [...perInstr].sort((a,b)=>b.pctGreen-a.pctGreen);
-  let rankHtml = '<table class="rank-table"><tr><th>#</th><th>Instrumento</th><th>Días</th><th>% Verde</th><th>% Rojo</th><th>% Lateral</th></tr>';
-  sorted.forEach((s,i)=>{
-    rankHtml += `<tr><td>${i+1}</td><td>${s.instr.name}</td><td>${s.totalDays}</td><td class="pct-green">${s.pctGreen}%</td><td class="pct-red">${s.pctRed}%</td><td>${s.pctYellow}%</td></tr>`;
-  });
-  rankHtml += '</table>';
-  if(sorted.length===0) rankHtml = '<div class="empty-msg">Sin datos suficientes en este periodo.</div>';
-  rankSection.innerHTML += rankHtml;
-  container.appendChild(rankSection);
-
-  // Heatmap: color dominante por instrumento y día de la semana, sobre todo el histórico
-  const heatSection = document.createElement('section');
-  heatSection.className = 'panel';
-  heatSection.innerHTML = `<h2>Mapa de calor por día de la semana</h2><div class="desc">% de días alcistas de cada instrumento en cada día de la semana, sobre todo el histórico guardado.</div>`;
-  const agg = {}; // instrId -> dow -> counts
-  instrs.forEach(instr=>{ agg[instr.id]={}; [1,2,3,4,5].forEach(dow=>agg[instr.id][dow]={green:0,red:0,yellow:0}); });
-  instrs.forEach(instr=>{
-    const allDates = Object.keys(store.data[instr.id]||{});
-    allDates.forEach(ds=>{
-      const d = parseDate(ds); const dow = d.getDay();
-      const s = store.data[instr.id][ds];
-      if(agg[instr.id][dow]) agg[instr.id][dow][s]++;
-    });
-  });
-  let heatHtml = '<div style="overflow-x:auto;"><table class="heatmap-table"><tr><th style="text-align:left;">Instrumento</th>' + [1,2,3,4,5].map(d=>`<th>${DOW_SHORT[d]}</th>`).join('') + '</tr>';
-  instrs.forEach(instr=>{
-    heatHtml += `<tr><td style="text-align:left;padding:4px 6px;font-weight:600;">${instr.name}</td>`;
-    [1,2,3,4,5].forEach(dow=>{
-      const c = agg[instr.id][dow]; const total = c.green+c.red+c.yellow;
-      if(total===0){ heatHtml += `<td><div class="heat-cell empty">–</div></td>`; }
-      else{
-        const dom = Object.keys(c).reduce((a,b)=>c[a]>=c[b]?a:b);
-        const pct = Math.round((c[dom]/total)*100);
-        const color = dom==='green'?'var(--green)':dom==='red'?'var(--red)':'var(--yellow)';
-        heatHtml += `<td><div class="heat-cell" style="background:${color};">${pct}%</div></td>`;
-      }
-    });
-    heatHtml += '</tr>';
-  });
-  heatHtml += '</table></div>';
-  heatSection.innerHTML += heatHtml;
-  container.appendChild(heatSection);
-}
-
-// ---------- EXPORT / IMPORT ----------
-document.getElementById('btn-export').addEventListener('click', ()=>{
-  const payload = { exportado: new Date().toISOString(), store };
-  const blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = `cartera-sesiones-backup-${fmtDate(new Date())}.json`;
-  a.click(); URL.revokeObjectURL(url);
-});
-document.getElementById('btn-import').addEventListener('click', ()=> document.getElementById('file-import').click());
-document.getElementById('file-import').addEventListener('change', (e)=>{
-  const file = e.target.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = function(ev){
-    try{
-      const payload = JSON.parse(ev.target.result);
-      if(payload.store && payload.store.instruments){
-        const replace = confirm("¿Reemplazar todos los datos actuales por los del archivo? Cancelar = mantener los actuales (no se importará).");
-        if(replace){ store = payload.store; save(); renderAll(); alert("Importación completada."); }
-      } else { alert("El archivo no tiene el formato esperado."); }
-    }catch(err){ alert("No se pudo leer el archivo: " + err.message); }
-  };
-  reader.readAsText(file);
-  e.target.value = '';
-});
-
-function renderAll(){
-  renderInstrumentos();
-  renderDay();
-  renderWeek();
-  renderMonth();
-}
+const STORE_KEY="th_sesiones_auto_v1";
+const DOW=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
+const MONTHS=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
+const PROXY=[u=>u,u=>"https://corsproxy.io/?"+encodeURIComponent(u),u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),u=>"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u)];
+function load(){try{return JSON.parse(localStorage.getItem(STORE_KEY));}catch(e){return null;}}
+const state=load()||{instruments:[],bars:{},threshold:0.40,fetchedAt:0};
+function save(){localStorage.setItem(STORE_KEY,JSON.stringify(state));}
+function uid(){return "i"+Date.now().toString(36)+Math.random().toString(36).slice(2,5);}
+function fmtDate(d){return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");}
+function parseDate(s){const [y,m,d]=s.split("-").map(Number);return new Date(y,m-1,d);}
+function isWeekend(d){const n=d.getDay();return n===0||n===6;}
+function mondayOf(d){const nd=new Date(d);const dow=nd.getDay();nd.setDate(nd.getDate()+(dow===0?-6:1-dow));nd.setHours(0,0,0,0);return nd;}
+function setStatus(m){document.getElementById("status").textContent=m||"";}
+function classify(prev,close,thr){if(!(prev>0)||close==null)return null;const pct=(close-prev)/prev*100;if(Math.abs(pct)<thr)return "yellow";return close>=prev?"green":"red";}
+function word(s){return s==="green"?"Alcista":s==="red"?"Bajista":s==="yellow"?"Lateral":"Sin dato";}
+function fmtPct(p){if(p==null||Number.isNaN(p))return "";return (p>=0?"+":"")+p.toFixed(2).replace(".",",")+"%";}
+function instrumentDay(instr,dateStr){const rows=state.bars[instr.ticker]||[];const i=rows.findIndex(r=>r.d===dateStr);if(i<=0)return {state:null,pct:null};const prev=rows[i-1].c,close=rows[i].c;return {state:classify(prev,close,state.threshold),pct:(close-prev)/prev*100};}
+function majority(dateStr){const counts={green:0,red:0,yellow:0};state.instruments.forEach(instr=>{const info=instrumentDay(instr,dateStr);if(info.state)counts[info.state]++;});const total=counts.green+counts.red+counts.yellow;if(!total)return {state:null,counts,total};const ranked=["green","red","yellow"].sort((a,b)=>counts[b]-counts[a]);let win=ranked[0];if(counts[ranked[0]]===counts[ranked[1]])win="yellow";return {state:win,counts,total};}
+async function fetchJson(url){let last;for(const wrap of PROXY){try{const r=await fetch(wrap(url),{headers:{Accept:"application/json"}});if(!r.ok)throw new Error("HTTP "+r.status);return await r.json();}catch(e){last=e;}}throw last||new Error("Sin red");}
+async function fetchDaily(ticker){const url="https://query1.finance.yahoo.com/v8/finance/chart/"+encodeURIComponent(ticker)+"?interval=1d&range=6mo";const data=await fetchJson(url);const res=data&&data.chart&&data.chart.result&&data.chart.result[0];if(!res)throw new Error("Sin velas");const ts=res.timestamp||[];const q=(res.indicators&&res.indicators.quote&&res.indicators.quote[0])||{};const rows=[];for(let i=0;i<ts.length;i++){if(q.close[i]==null)continue;rows.push({d:fmtDate(new Date(ts[i]*1000)),c:q.close[i]});}rows.sort((a,b)=>a.d<b.d?-1:1);return {name:(res.meta&&(res.meta.shortName||res.meta.symbol))||ticker,rows};}
+async function refreshAll(){if(!state.instruments.length){setStatus("Añade un valor primero.");return;}setStatus("Bajando cierres…");let ok=0,fail=0;for(const instr of state.instruments){try{const chart=await fetchDaily(instr.ticker);state.bars[instr.ticker]=chart.rows;ok++;}catch(e){fail++;}}state.fetchedAt=Date.now();save();renderAll();setStatus("Actualizado. "+ok+" bien"+(fail?", "+fail+" fallaron":"")+".");}
+const views={dia:document.getElementById("view-dia"),semana:document.getElementById("view-semana"),mes:document.getElementById("view-mes"),instrumentos:document.getElementById("view-instrumentos")};
+document.querySelectorAll("nav button").forEach(btn=>{btn.onclick=()=>{document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");Object.values(views).forEach(v=>v.classList.add("hidden"));views[btn.dataset.view].classList.remove("hidden");renderAll();};});
+function renderInstrumentos(){const box=document.getElementById("instr-list");if(!state.instruments.length){box.innerHTML='<div class="empty">Aún no hay nada. Busca arriba.</div>';return;}box.innerHTML="";state.instruments.forEach(instr=>{const row=document.createElement("div");row.className="instr-row";row.innerHTML=`<span class="name">${instr.name}</span><span class="ticker">${instr.ticker}</span>`;const del=document.createElement("button");del.className="btn danger ghost";del.textContent="Quitar";del.onclick=()=>{state.instruments=state.instruments.filter(i=>i.id!==instr.id);save();renderAll();};row.appendChild(del);box.appendChild(row);});}
+let currentDay=new Date();while(isWeekend(currentDay))currentDay.setDate(currentDay.getDate()-1);
+const diaPicker=document.getElementById("dia-picker");
+function renderDay(){const ds=fmtDate(currentDay);diaPicker.value=ds;document.getElementById("dia-title").textContent=currentDay.toLocaleDateString("es-ES",{weekday:"long",day:"numeric",month:"long"});const content=document.getElementById("dia-content");if(!state.instruments.length){content.innerHTML='<div class="empty">Entra en Valores y añade lo que tengas ahora.</div>';return;}const list=document.createElement("div");list.className="daily-list";state.instruments.forEach(instr=>{const info=instrumentDay(instr,ds);const row=document.createElement("div");row.className="daily-row"+(info.state?" "+info.state:"");row.innerHTML=`<span class="name">${instr.name}</span><span class="ticker">${instr.ticker}</span><span class="chg">${fmtPct(info.pct)}</span><span class="state">${word(info.state)}</span>`;list.appendChild(row);});content.innerHTML="";content.appendChild(list);const maj=majority(ds);const p=document.createElement("div");p.className="total";p.innerHTML=`<span>La cartera ese día</span><span class="badge ${maj.state||"empty"}">${maj.state?word(maj.state):"Sin dato"}</span><span class="status">${maj.counts.green} verdes · ${maj.counts.red} rojos · ${maj.counts.yellow} laterales</span>`;content.appendChild(p);}
+document.getElementById("dia-prev").onclick=()=>{do currentDay.setDate(currentDay.getDate()-1); while(isWeekend(currentDay));renderDay();};
+document.getElementById("dia-next").onclick=()=>{do currentDay.setDate(currentDay.getDate()+1); while(isWeekend(currentDay));renderDay();};
+document.getElementById("dia-today").onclick=()=>{currentDay=new Date();while(isWeekend(currentDay))currentDay.setDate(currentDay.getDate()-1);renderDay();};
+diaPicker.onchange=()=>{currentDay=parseDate(diaPicker.value);renderDay();};
+function goToDay(ds){currentDay=parseDate(ds);document.querySelector('nav button[data-view="dia"]').click();}
+let weekMon=mondayOf(new Date());
+function renderWeek(){const days=Array.from({length:5},(_,i)=>{const d=new Date(weekMon);d.setDate(weekMon.getDate()+i);return d;});document.getElementById("sem-range").textContent=weekMon.toLocaleDateString("es-ES",{day:"numeric",month:"short"})+" – "+days[4].toLocaleDateString("es-ES",{day:"numeric",month:"short"});const grid=document.getElementById("sem-grid");grid.innerHTML="";days.forEach(d=>{const ds=fmtDate(d);const maj=majority(ds);const card=document.createElement("div");card.className="week-card"+(maj.state?" "+maj.state:"");card.innerHTML=`<div class="wd">${DOW[d.getDay()]} ${d.getDate()}</div><div class="big">${maj.state?word(maj.state):"—"}</div><div class="cnt">${maj.total?(maj.counts.green+"V · "+maj.counts.red+"R · "+maj.counts.yellow+"L"):"sin dato"}</div>`;card.onclick=()=>goToDay(ds);grid.appendChild(card);});}
+document.getElementById("sem-prev").onclick=()=>{weekMon.setDate(weekMon.getDate()-7);renderWeek();};
+document.getElementById("sem-next").onclick=()=>{weekMon.setDate(weekMon.getDate()+7);renderWeek();};
+document.getElementById("sem-today").onclick=()=>{weekMon=mondayOf(new Date());renderWeek();};
+let currentMonth=new Date();
+function renderMonth(){const y=currentMonth.getFullYear(),m=currentMonth.getMonth();document.getElementById("mes-label").textContent=MONTHS[m]+" "+y;document.getElementById("mes-hdr").innerHTML=DOW.slice(1,6).map(l=>`<div class="hdr">${l}</div>`).join("");const grid=document.getElementById("mes-grid");grid.innerHTML="";const cells=[];for(let day=1;day<=new Date(y,m+1,0).getDate();day++){const d=new Date(y,m,day);if(!isWeekend(d))cells.push(d);}if(cells[0]){for(let i=0;i<cells[0].getDay()-1;i++)grid.appendChild(document.createElement("div"));}cells.forEach(d=>{const ds=fmtDate(d);const maj=majority(ds);const el=document.createElement("div");el.className="month-day"+(maj.state?" "+maj.state:"");el.innerHTML=`<div class="num">${d.getDate()}</div><div>${maj.state?`<span class="badge ${maj.state}">${word(maj.state)[0]}</span>`:"–"}<div class="status">${maj.total?maj.counts.green+"/"+maj.counts.red+"/"+maj.counts.yellow:""}</div></div>`;el.onclick=()=>goToDay(ds);grid.appendChild(el);});}
+document.getElementById("mes-prev").onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()-1);renderMonth();};
+document.getElementById("mes-next").onclick=()=>{currentMonth.setMonth(currentMonth.getMonth()+1);renderMonth();};
+document.getElementById("mes-today").onclick=()=>{currentMonth=new Date();renderMonth();};
+function renderAll(){renderInstrumentos();renderDay();renderWeek();renderMonth();}
+document.getElementById("btn-search").onclick=runSearch;
+document.getElementById("q").addEventListener("keydown",e=>{if(e.key==="Enter")runSearch();});
+async function runSearch(){const q=document.getElementById("q").value.trim();const box=document.getElementById("search-res");if(!q)return;box.innerHTML='<p class="desc">Buscando…</p>';try{const data=await fetchJson("https://query1.finance.yahoo.com/v1/finance/search?q="+encodeURIComponent(q));const list=(data.quotes||[]).filter(x=>x.symbol&&x.quoteType!=="OPTION").slice(0,8);if(!list.length){box.innerHTML='<p class="desc">Nada. Prueba el ticker (VRT, ASML.AS).</p>';return;}box.innerHTML=list.map(x=>`<button data-s="${x.symbol}" data-n="${(x.shortname||x.longname||x.symbol).replace(/"/g,"")}"><b>${x.symbol}</b> · ${x.shortname||x.longname||""}</button>`).join("");box.querySelectorAll("button").forEach(b=>b.onclick=async()=>{const ticker=b.dataset.s;if(state.instruments.some(i=>i.ticker===ticker)){setStatus(ticker+" ya está");return;}state.instruments.push({id:uid(),name:b.dataset.n,ticker});save();document.getElementById("q").value="";box.innerHTML="";renderAll();try{const chart=await fetchDaily(ticker);state.bars[ticker]=chart.rows;state.fetchedAt=Date.now();save();renderAll();setStatus(ticker+" listo");}catch(e){setStatus("Añadido. Dale a Actualizar si no pinta.");}});}catch(e){box.innerHTML='<p class="desc">La búsqueda no pasó. Escribe el ticker tal cual.</p>';}}
+["btn-refresh","btn-refresh-w","btn-refresh-m"].forEach(id=>document.getElementById(id).onclick=refreshAll);
+const th=document.getElementById("threshold");th.value=state.threshold;th.onchange=()=>{state.threshold=Number(th.value)||0.4;save();renderAll();};
+document.getElementById("btn-export").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({exportado:new Date().toISOString(),state},null,2)],{type:"application/json"}));a.download="cartera-sesiones-"+fmtDate(new Date())+".json";a.click();};
+document.getElementById("btn-import").onclick=()=>document.getElementById("file-import").click();
+document.getElementById("file-import").onchange=e=>{const file=e.target.files[0];if(!file)return;const r=new FileReader();r.onload=ev=>{try{const p=JSON.parse(ev.target.result);if(p.state&&p.state.instruments&&confirm("¿Sustituir lo guardado?")){Object.assign(state,p.state);save();renderAll();}}catch(err){alert("Archivo no válido");}};r.readAsText(file);e.target.value="";};
 renderAll();
-
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => { navigator.serviceWorker.register("sw.js").catch(()=>{}); });
-}
+if(state.instruments.length && Date.now()-(state.fetchedAt||0)>20*60*1000) refreshAll();
+if("serviceWorker" in navigator) window.addEventListener("load",()=>navigator.serviceWorker.register("sw.js").catch(()=>{}));
 })();
 </script>
 </body>
