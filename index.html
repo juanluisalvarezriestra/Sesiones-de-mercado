@@ -156,7 +156,7 @@
     <div class="status" id="status"></div>
   </div>
 </main>
-<footer>Cartera de Sesiones v4.4 — Traders House — el mercado pinta solo</footer>
+<footer>Cartera de Sesiones v4.5 — Traders House — el mercado pinta solo</footer>
 <script>
 (function(){
 "use strict";
@@ -168,7 +168,7 @@ const CATALOG=[
   ["Eaton","ETN"],["GE Vernova","GEV"],["Xylem","XYL"],["Vertiv","VRT"],["Alphabet","GOOGL"],
   ["Schneider Electric","SU.PA"],["Eiffage","FGR.PA"],["BAE Systems","BA.L"],["Uniqa","UQA.VI"],
   ["Xiaomi","1810.HK"],["Lynas","LYC.AX"],["Cameco","CCJ"],["Energy Fuels","UUUU"],
-  ["Rocket Lab","RKLB"],["argenx","ARGX.BR"],["Eli Lilly","LLY"],["Albemarle","ALB"],
+  ["Rocket Lab","RKLB"],["argenx","ARGX.BR"],["NXP","NXPI"],["Eli Lilly","LLY"],["Albemarle","ALB"],
   ["Agnico Eagle","AEM"],["Intuitive Machines","LUNR"],["Teradyne","TER"]
 ];
 const ALIAS={};
@@ -279,6 +279,7 @@ async function addTicker(raw){
     if(rawT.endsWith(".IT")) candidates.push(rawT.replace(/\.IT$/,".MI"));
     if(rawT.endsWith(".FR")) candidates.push(rawT.replace(/\.FR$/,".PA"));
     if(rawT.endsWith(".ES")) candidates.push(rawT.replace(/\.ES$/,".MC"));
+    if(rawT.endsWith(".US")) candidates.push(rawT.replace(/\.US$/,""));
   } else if(alias) {
     candidates=[alias];
   } else {
@@ -303,17 +304,17 @@ async function addTicker(raw){
     }catch(e){ lastErr=e; }
   }
   const forced=candidates[0];
-  if(forced && forced.includes(".")){
+  if(forced && /^[A-Z0-9][A-Z0-9.-]{0,14}$/.test(forced)){
     if(!state.instruments.some(i=>i.ticker===forced)){
       state.instruments.push({id:uid(), name:forced, ticker:forced});
       save(); renderAll();
     }
     document.getElementById("q").value="";
-    box.innerHTML='<p class="desc">Lo he metido como '+forced+', pero Yahoo no me dio precios ahora. Dale a Actualizar en un rato.</p>';
-    setStatus(forced+" añadido sin precios.");
+    box.innerHTML='<p class="desc">'+forced+' está en la lista. Yahoo no mandó precios ahora; dale a Actualizar.</p>';
+    setStatus(forced+" añadido.");
     return;
   }
-  box.innerHTML='<p class="desc">No pude validar el ticker. Europeos: PRY.MI, ASM.AS, CRBN.AS, ASML.AS</p>';
+  box.innerHTML='<p class="desc">No reconocí eso. Prueba NXPI, ARGX.BR, PRY.MI, CRBN.AS</p>';
 }
 async function runSearch(){
   const q=(document.getElementById("q").value||"").trim();
