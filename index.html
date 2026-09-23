@@ -100,10 +100,10 @@
   <div id="view-instrumentos" class="hidden">
     <div class="panel">
       <h2>Añadir lo que tengas ahora</h2>
-      <p class="desc">Pon el ticker de Yahoo y dale a Añadir. ASML en Ámsterdam es ASML.AS. Prysmian es PRY.MI. Vertiv es VRT.</p>
+      <p class="desc">Busca por nombre. Prysmian, Corbion, Eaton, ASM International… Si no está en la lista, pon el ticker europeo (PRY.MI, CRBN.AS).</p>
       <div class="searchbox">
-        <input id="q" placeholder="ASML.AS  ·  PRY.MI  ·  VRT  ·  XYL" style="flex:1;min-width:200px;">
-        <button class="btn primary" id="btn-search">Añadir</button>
+        <input id="q" placeholder="Prysmian, Corbion, Eaton, Vertiv…" style="flex:1;min-width:200px;">
+        <button class="btn primary" id="btn-search">Buscar</button>
       </div>
       <div id="search-res"></div>
     </div>
@@ -156,18 +156,27 @@
     <div class="status" id="status"></div>
   </div>
 </main>
-<footer>Cartera de Sesiones v4.1 — Traders House — el mercado pinta solo</footer>
+<footer>Cartera de Sesiones v4.4 — Traders House — el mercado pinta solo</footer>
 <script>
 (function(){
 "use strict";
 const STORE_KEY="th_sesiones_auto_v1";
 const DOW=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 const MONTHS=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-const ALIAS={
-  "ASML":"ASML.AS","PRYSMIAN":"PRY.MI","PRY":"PRY.MI","XYLEM":"XYL","VERTIV":"VRT",
-  "ALPHABET":"GOOGL","GOOGLE":"GOOGL","GE VERNOVA":"GEV","GEV":"GEV","ROCKET LAB":"RKLB",
-  "ENERGY FUELS":"UUUU","CAMECO":"CCJ"
-};
+const CATALOG=[
+  ["Prysmian","PRY.MI"],["Corbion","CRBN.AS"],["ASM International","ASM.AS"],["ASML","ASML.AS"],
+  ["Eaton","ETN"],["GE Vernova","GEV"],["Xylem","XYL"],["Vertiv","VRT"],["Alphabet","GOOGL"],
+  ["Schneider Electric","SU.PA"],["Eiffage","FGR.PA"],["BAE Systems","BA.L"],["Uniqa","UQA.VI"],
+  ["Xiaomi","1810.HK"],["Lynas","LYC.AX"],["Cameco","CCJ"],["Energy Fuels","UUUU"],
+  ["Rocket Lab","RKLB"],["argenx","ARGX.BR"],["Eli Lilly","LLY"],["Albemarle","ALB"],
+  ["Agnico Eagle","AEM"],["Intuitive Machines","LUNR"],["Teradyne","TER"]
+];
+const ALIAS={};
+CATALOG.forEach(([n,t])=>{ ALIAS[n.toUpperCase()]=t; ALIAS[t]=t; ALIAS[t.split(".")[0]]=t; });
+ALIAS["PRY"]="PRY.MI"; ALIAS["PRYSMIAN"]="PRY.MI"; ALIAS["ASM"]="ASM.AS"; ALIAS["ASMI"]="ASM.AS";
+ALIAS["CRBN.NL"]="CRBN.AS"; ALIAS["GEVERNOVA"]="GEV"; ALIAS["GOOGLE"]="GOOGL"; ALIAS["ASM INTERNACIONAL"]="ASM.AS";
+ALIAS["ARGX.BE"]="ARGX.BR"; ALIAS["ARGX"]="ARGX.BR";
+ALIAS["ASM INTERNATIONAL"]="ASM.AS";
 const PROXY=[
   u=>u,
   u=>"https://corsproxy.io/?url="+encodeURIComponent(u),
@@ -203,7 +212,33 @@ async function fetchJson(url){
   }
   throw last||new Error("Sin red");
 }
-async function fetchDaily(ticker){const url="https://query1.finance.yahoo.com/v8/finance/chart/"+encodeURIComponent(ticker)+"?interval=1d&range=6mo";const data=await fetchJson(url);const res=data&&data.chart&&data.chart.result&&data.chart.result[0];if(!res)throw new Error("Sin velas");const ts=res.timestamp||[];const q=(res.indicators&&res.indicators.quote&&res.indicators.quote[0])||{};const rows=[];for(let i=0;i<ts.length;i++){if(q.close[i]==null)continue;rows.push({d:fmtDate(new Date(ts[i]*1000)),c:q.close[i]});}rows.sort((a,b)=>a.d<b.d?-1:1);return {name:(res.meta&&(res.meta.shortName||res.meta.symbol))||ticker,rows};}
+function parseYahooChart(data){
+  const res=data&&data.chart&&data.chart.result&&data.chart.result[0];
+  if(!res) return null;
+  const ts=res.timestamp||[];
+  const q=(res.indicators&&res.indicators.quote&&res.indicators.quote[0])||{};
+  const rows=[];
+  for(let i=0;i<ts.length;i++){
+    if(q.close[i]==null) continue;
+    rows.push({d:fmtDate(new Date(ts[i]*1000)),c:q.close[i]});
+  }
+  rows.sort((a,b)=>a.d<b.d?-1:1);
+  if(!rows.length) return null;
+  return {name:(res.meta&&(res.meta.shortName||res.meta.symbol))||"", rows};
+}
+async function fetchDaily(ticker){
+  const hosts=["https://query1.finance.yahoo.com","https://query2.finance.yahoo.com"];
+  let last;
+  for(const host of hosts){
+    const url=host+"/v8/finance/chart/"+encodeURIComponent(ticker)+"?interval=1d&range=6mo";
+    try{
+      const data=await fetchJson(url);
+      const parsed=parseYahooChart(data);
+      if(parsed){ parsed.name=parsed.name||ticker; return parsed; }
+    }catch(e){ last=e; }
+  }
+  throw last||new Error("Sin velas");
+}
 async function refreshAll(){if(!state.instruments.length){setStatus("Añade un valor primero.");return;}setStatus("Bajando cierres…");let ok=0,fail=0;for(const instr of state.instruments){try{const chart=await fetchDaily(instr.ticker);state.bars[instr.ticker]=chart.rows;ok++;}catch(e){fail++;}}state.fetchedAt=Date.now();save();renderAll();setStatus("Actualizado. "+ok+" bien"+(fail?", "+fail+" fallaron":"")+".");}
 const views={dia:document.getElementById("view-dia"),semana:document.getElementById("view-semana"),mes:document.getElementById("view-mes"),instrumentos:document.getElementById("view-instrumentos")};
 document.querySelectorAll("nav button").forEach(btn=>{btn.onclick=()=>{document.querySelectorAll("nav button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");Object.values(views).forEach(v=>v.classList.add("hidden"));views[btn.dataset.view].classList.remove("hidden");renderAll();};});
@@ -233,9 +268,23 @@ async function addTicker(raw){
   const box=document.getElementById("search-res");
   let q=(raw||"").trim();
   if(!q) return;
-  const alias=ALIAS[q.toUpperCase()] || ALIAS[q.toUpperCase().replace(/\s+/g," ")];
-  const candidates=[alias,q.toUpperCase(),q.toUpperCase()+".AS",q.toUpperCase()+".PA",q.toUpperCase()+".MI",q.toUpperCase()+".L"].filter(Boolean)
-    .filter((v,i,a)=>a.indexOf(v)===i);
+  const key=q.toUpperCase().replace(/\s+/g," ").replace(/[.]/g,".");
+  const alias=ALIAS[key] || ALIAS[key.replace(/ /g,"")];
+  let candidates;
+  const rawT = q.toUpperCase();
+  if(q.includes(".")) {
+    candidates=[rawT];
+    if(rawT.endsWith(".BE")) candidates.push(rawT.replace(/\.BE$/,".BR"));
+    if(rawT.endsWith(".NL")) candidates.push(rawT.replace(/\.NL$/,".AS"));
+    if(rawT.endsWith(".IT")) candidates.push(rawT.replace(/\.IT$/,".MI"));
+    if(rawT.endsWith(".FR")) candidates.push(rawT.replace(/\.FR$/,".PA"));
+    if(rawT.endsWith(".ES")) candidates.push(rawT.replace(/\.ES$/,".MC"));
+  } else if(alias) {
+    candidates=[alias];
+  } else {
+    candidates=[rawT, rawT+".AS", rawT+".MI", rawT+".PA", rawT+".L", rawT+".MC", rawT+".BR"];
+  }
+  if(alias && !candidates.includes(alias)) candidates.unshift(alias);
   box.innerHTML='<p class="desc">Comprobando ticker…</p>';
   let lastErr;
   for(const ticker of candidates){
@@ -253,9 +302,33 @@ async function addTicker(raw){
       return;
     }catch(e){ lastErr=e; }
   }
-  box.innerHTML='<p class="desc">No encontré ese ticker. Prueba el código de Yahoo: ASML.AS, PRY.MI, VRT, XYL, GOOGL.</p>';
+  const forced=candidates[0];
+  if(forced && forced.includes(".")){
+    if(!state.instruments.some(i=>i.ticker===forced)){
+      state.instruments.push({id:uid(), name:forced, ticker:forced});
+      save(); renderAll();
+    }
+    document.getElementById("q").value="";
+    box.innerHTML='<p class="desc">Lo he metido como '+forced+', pero Yahoo no me dio precios ahora. Dale a Actualizar en un rato.</p>';
+    setStatus(forced+" añadido sin precios.");
+    return;
+  }
+  box.innerHTML='<p class="desc">No pude validar el ticker. Europeos: PRY.MI, ASM.AS, CRBN.AS, ASML.AS</p>';
 }
-async function runSearch(){ addTicker(document.getElementById("q").value); }
+async function runSearch(){
+  const q=(document.getElementById("q").value||"").trim();
+  const box=document.getElementById("search-res");
+  if(!q) return;
+  const needle=q.toLowerCase();
+  const hits=CATALOG.filter(([n,t])=>n.toLowerCase().includes(needle)||t.toLowerCase().includes(needle));
+  if(hits.length===1){ addTicker(hits[0][1]); return; }
+  if(hits.length>1){
+    box.innerHTML=hits.map(([n,t])=>`<button data-s="${t}"><b>${n}</b> · ${t}</button>`).join("");
+    box.querySelectorAll("button").forEach(b=>b.onclick=()=>addTicker(b.dataset.s));
+    return;
+  }
+  addTicker(q);
+}
 ["btn-refresh","btn-refresh-w","btn-refresh-m"].forEach(id=>document.getElementById(id).onclick=refreshAll);
 const th=document.getElementById("threshold");th.value=state.threshold;th.onchange=()=>{state.threshold=Number(th.value)||0.4;save();renderAll();};
 document.getElementById("btn-export").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({exportado:new Date().toISOString(),state},null,2)],{type:"application/json"}));a.download="cartera-sesiones-"+fmtDate(new Date())+".json";a.click();};
