@@ -100,10 +100,10 @@
   <div id="view-instrumentos" class="hidden">
     <div class="panel">
       <h2>Añadir lo que tengas ahora</h2>
-      <p class="desc">Busca el nombre o el ticker. Si sales de un valor, lo quitas y deja de contar.</p>
+      <p class="desc">Pon el ticker de Yahoo y dale a Añadir. ASML en Ámsterdam es ASML.AS. Prysmian es PRY.MI. Vertiv es VRT.</p>
       <div class="searchbox">
-        <input id="q" placeholder="Vertiv, ASML, Xylem, RKLB…" style="flex:1;min-width:200px;">
-        <button class="btn primary" id="btn-search">Buscar</button>
+        <input id="q" placeholder="ASML.AS  ·  PRY.MI  ·  VRT  ·  XYL" style="flex:1;min-width:200px;">
+        <button class="btn primary" id="btn-search">Añadir</button>
       </div>
       <div id="search-res"></div>
     </div>
@@ -156,14 +156,25 @@
     <div class="status" id="status"></div>
   </div>
 </main>
-<footer>Cartera de Sesiones v4.0 — Traders House — el mercado pinta solo</footer>
+<footer>Cartera de Sesiones v4.1 — Traders House — el mercado pinta solo</footer>
 <script>
 (function(){
 "use strict";
 const STORE_KEY="th_sesiones_auto_v1";
 const DOW=["Dom","Lun","Mar","Mié","Jue","Vie","Sáb"];
 const MONTHS=["enero","febrero","marzo","abril","mayo","junio","julio","agosto","septiembre","octubre","noviembre","diciembre"];
-const PROXY=[u=>u,u=>"https://corsproxy.io/?"+encodeURIComponent(u),u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),u=>"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u)];
+const ALIAS={
+  "ASML":"ASML.AS","PRYSMIAN":"PRY.MI","PRY":"PRY.MI","XYLEM":"XYL","VERTIV":"VRT",
+  "ALPHABET":"GOOGL","GOOGLE":"GOOGL","GE VERNOVA":"GEV","GEV":"GEV","ROCKET LAB":"RKLB",
+  "ENERGY FUELS":"UUUU","CAMECO":"CCJ"
+};
+const PROXY=[
+  u=>u,
+  u=>"https://corsproxy.io/?url="+encodeURIComponent(u),
+  u=>"https://corsproxy.io/?"+encodeURIComponent(u),
+  u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),
+  u=>"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u)
+];
 function load(){try{return JSON.parse(localStorage.getItem(STORE_KEY));}catch(e){return null;}}
 const state=load()||{instruments:[],bars:{},threshold:0.40,fetchedAt:0};
 function save(){localStorage.setItem(STORE_KEY,JSON.stringify(state));}
@@ -178,7 +189,20 @@ function word(s){return s==="green"?"Alcista":s==="red"?"Bajista":s==="yellow"?"
 function fmtPct(p){if(p==null||Number.isNaN(p))return "";return (p>=0?"+":"")+p.toFixed(2).replace(".",",")+"%";}
 function instrumentDay(instr,dateStr){const rows=state.bars[instr.ticker]||[];const i=rows.findIndex(r=>r.d===dateStr);if(i<=0)return {state:null,pct:null};const prev=rows[i-1].c,close=rows[i].c;return {state:classify(prev,close,state.threshold),pct:(close-prev)/prev*100};}
 function majority(dateStr){const counts={green:0,red:0,yellow:0};state.instruments.forEach(instr=>{const info=instrumentDay(instr,dateStr);if(info.state)counts[info.state]++;});const total=counts.green+counts.red+counts.yellow;if(!total)return {state:null,counts,total};const ranked=["green","red","yellow"].sort((a,b)=>counts[b]-counts[a]);let win=ranked[0];if(counts[ranked[0]]===counts[ranked[1]])win="yellow";return {state:win,counts,total};}
-async function fetchJson(url){let last;for(const wrap of PROXY){try{const r=await fetch(wrap(url),{headers:{Accept:"application/json"}});if(!r.ok)throw new Error("HTTP "+r.status);return await r.json();}catch(e){last=e;}}throw last||new Error("Sin red");}
+async function fetchJson(url){
+  let last;
+  for(const wrap of PROXY){
+    try{
+      const r=await fetch(wrap(url),{headers:{Accept:"application/json"}});
+      if(!r.ok) throw new Error("HTTP "+r.status);
+      const txt=await r.text();
+      const data=JSON.parse(txt);
+      if(data && data.contents && typeof data.contents==="string") return JSON.parse(data.contents);
+      return data;
+    }catch(e){ last=e; }
+  }
+  throw last||new Error("Sin red");
+}
 async function fetchDaily(ticker){const url="https://query1.finance.yahoo.com/v8/finance/chart/"+encodeURIComponent(ticker)+"?interval=1d&range=6mo";const data=await fetchJson(url);const res=data&&data.chart&&data.chart.result&&data.chart.result[0];if(!res)throw new Error("Sin velas");const ts=res.timestamp||[];const q=(res.indicators&&res.indicators.quote&&res.indicators.quote[0])||{};const rows=[];for(let i=0;i<ts.length;i++){if(q.close[i]==null)continue;rows.push({d:fmtDate(new Date(ts[i]*1000)),c:q.close[i]});}rows.sort((a,b)=>a.d<b.d?-1:1);return {name:(res.meta&&(res.meta.shortName||res.meta.symbol))||ticker,rows};}
 async function refreshAll(){if(!state.instruments.length){setStatus("Añade un valor primero.");return;}setStatus("Bajando cierres…");let ok=0,fail=0;for(const instr of state.instruments){try{const chart=await fetchDaily(instr.ticker);state.bars[instr.ticker]=chart.rows;ok++;}catch(e){fail++;}}state.fetchedAt=Date.now();save();renderAll();setStatus("Actualizado. "+ok+" bien"+(fail?", "+fail+" fallaron":"")+".");}
 const views={dia:document.getElementById("view-dia"),semana:document.getElementById("view-semana"),mes:document.getElementById("view-mes"),instrumentos:document.getElementById("view-instrumentos")};
@@ -205,7 +229,33 @@ document.getElementById("mes-today").onclick=()=>{currentMonth=new Date();render
 function renderAll(){renderInstrumentos();renderDay();renderWeek();renderMonth();}
 document.getElementById("btn-search").onclick=runSearch;
 document.getElementById("q").addEventListener("keydown",e=>{if(e.key==="Enter")runSearch();});
-async function runSearch(){const q=document.getElementById("q").value.trim();const box=document.getElementById("search-res");if(!q)return;box.innerHTML='<p class="desc">Buscando…</p>';try{const data=await fetchJson("https://query1.finance.yahoo.com/v1/finance/search?q="+encodeURIComponent(q));const list=(data.quotes||[]).filter(x=>x.symbol&&x.quoteType!=="OPTION").slice(0,8);if(!list.length){box.innerHTML='<p class="desc">Nada. Prueba el ticker (VRT, ASML.AS).</p>';return;}box.innerHTML=list.map(x=>`<button data-s="${x.symbol}" data-n="${(x.shortname||x.longname||x.symbol).replace(/"/g,"")}"><b>${x.symbol}</b> · ${x.shortname||x.longname||""}</button>`).join("");box.querySelectorAll("button").forEach(b=>b.onclick=async()=>{const ticker=b.dataset.s;if(state.instruments.some(i=>i.ticker===ticker)){setStatus(ticker+" ya está");return;}state.instruments.push({id:uid(),name:b.dataset.n,ticker});save();document.getElementById("q").value="";box.innerHTML="";renderAll();try{const chart=await fetchDaily(ticker);state.bars[ticker]=chart.rows;state.fetchedAt=Date.now();save();renderAll();setStatus(ticker+" listo");}catch(e){setStatus("Añadido. Dale a Actualizar si no pinta.");}});}catch(e){box.innerHTML='<p class="desc">La búsqueda no pasó. Escribe el ticker tal cual.</p>';}}
+async function addTicker(raw){
+  const box=document.getElementById("search-res");
+  let q=(raw||"").trim();
+  if(!q) return;
+  const alias=ALIAS[q.toUpperCase()] || ALIAS[q.toUpperCase().replace(/\s+/g," ")];
+  const candidates=[alias,q.toUpperCase(),q.toUpperCase()+".AS",q.toUpperCase()+".PA",q.toUpperCase()+".MI",q.toUpperCase()+".L"].filter(Boolean)
+    .filter((v,i,a)=>a.indexOf(v)===i);
+  box.innerHTML='<p class="desc">Comprobando ticker…</p>';
+  let lastErr;
+  for(const ticker of candidates){
+    if(state.instruments.some(i=>i.ticker===ticker)){ setStatus(ticker+" ya está"); box.innerHTML=""; return; }
+    try{
+      const chart=await fetchDaily(ticker);
+      state.instruments.push({id:uid(), name:chart.name||ticker, ticker});
+      state.bars[ticker]=chart.rows;
+      state.fetchedAt=Date.now();
+      save();
+      document.getElementById("q").value="";
+      box.innerHTML="";
+      renderAll();
+      setStatus(ticker+" listo.");
+      return;
+    }catch(e){ lastErr=e; }
+  }
+  box.innerHTML='<p class="desc">No encontré ese ticker. Prueba el código de Yahoo: ASML.AS, PRY.MI, VRT, XYL, GOOGL.</p>';
+}
+async function runSearch(){ addTicker(document.getElementById("q").value); }
 ["btn-refresh","btn-refresh-w","btn-refresh-m"].forEach(id=>document.getElementById(id).onclick=refreshAll);
 const th=document.getElementById("threshold");th.value=state.threshold;th.onchange=()=>{state.threshold=Number(th.value)||0.4;save();renderAll();};
 document.getElementById("btn-export").onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify({exportado:new Date().toISOString(),state},null,2)],{type:"application/json"}));a.download="cartera-sesiones-"+fmtDate(new Date())+".json";a.click();};
