@@ -156,7 +156,7 @@
     <div class="status" id="status"></div>
   </div>
 </main>
-<footer>Cartera de Sesiones v4.5 — Traders House — el mercado pinta solo</footer>
+<footer>Cartera de Sesiones v4.6 — Traders House — el mercado pinta solo</footer>
 <script>
 (function(){
 "use strict";
@@ -226,16 +226,32 @@ function parseYahooChart(data){
   if(!rows.length) return null;
   return {name:(res.meta&&(res.meta.shortName||res.meta.symbol))||"", rows};
 }
+function yahooSymbol(t){
+  const MAP={"3CP.DE":"1810.HK","3CP.F":"1810.HK","XIACF":"1810.HK"};
+  let s=(t||"").toUpperCase();
+  if(MAP[s]) return MAP[s];
+  const xtb={".US":""," .US":"","BE":"BR","NL":"AS","IT":"MI","FR":"PA","ES":"MC","UK":"L"};
+  if(s.endsWith(".US")) return s.slice(0,-3);
+  if(s.endsWith(".BE")) return s.slice(0,-3)+".BR";
+  if(s.endsWith(".NL")) return s.slice(0,-3)+".AS";
+  if(s.endsWith(".IT")) return s.slice(0,-3)+".MI";
+  if(s.endsWith(".FR")) return s.slice(0,-3)+".PA";
+  if(s.endsWith(".ES")) return s.slice(0,-3)+".MC";
+  return s;
+}
 async function fetchDaily(ticker){
   const hosts=["https://query1.finance.yahoo.com","https://query2.finance.yahoo.com"];
   let last;
+  const sym=yahooSymbol(ticker);
+  for(const trySym of [sym, ticker]){
   for(const host of hosts){
-    const url=host+"/v8/finance/chart/"+encodeURIComponent(ticker)+"?interval=1d&range=6mo";
+    const url=host+"/v8/finance/chart/"+encodeURIComponent(trySym)+"?interval=1d&range=6mo";
     try{
       const data=await fetchJson(url);
       const parsed=parseYahooChart(data);
       if(parsed){ parsed.name=parsed.name||ticker; return parsed; }
     }catch(e){ last=e; }
+  }
   }
   throw last||new Error("Sin velas");
 }
